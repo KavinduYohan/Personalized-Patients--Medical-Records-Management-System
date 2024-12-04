@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medical Prescription Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 60%;
+      max-width: 500px;
+      margin: auto;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      color: #007bff;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      border: 1px solid #ced4da;
+      box-sizing: border-box;
+      color: #495057;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      background-color: #007bff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .note {
+      margin-top: 20px;
+      color: #6c757d;
+    }
+
+    .note p {
+      margin-bottom: 10px;
+    }
+  </style>
+
+
+
+</head>
+<body>
+
+  <div class="container mt-5">
+    <h2>Become a Doctor</h2>
+    <form action="/BecomeDoctor" method="post">
+      <input type="text" name="dname" class="form-control" placeholder="Doctor Name" required>
+      <input type="text" name="slmc" class="form-control" placeholder="SLMC Number" required>
+      <input type="email" name="email" class="form-control" placeholder="Enter the registered email as a user" required>
+      <input type="text" name="specialization" class="form-control" placeholder="Specialization Area" required>
+      <input type="text" name="ex" class="form-control" placeholder="About Experience" required>
+      <input type="text" name="description" class="form-control" placeholder="Description" required>
+
+     
+      <button type="submit" class="btn btn-danger mt-3">Submit</button>
+
+      <div class="note">
+        <h3>Note:</h3>
+        <p>Thank you for reaching out. We acknowledge your contact and will promptly send you a confirmation shortly.</p>
+        <p>Please be advised that your current registration status is as a user. After a thorough review of your submitted form and verification of the provided details, we will proceed to update your role to "Doctor."</p>
+        <p>We appreciate your patience during this process and look forward to welcoming you in your new capacity. If you have any further inquiries, feel free to contact our support team.</p>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

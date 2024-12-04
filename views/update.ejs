@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Patient Management System</title>
+    <!-- Include your CSS and other necessary scripts -->
+</head>
+
+<body>
+    <%- include('common/header')%>
+
+    <div class="container mt-5 w-50">
+        <h2 class="mb-4">Update Medical Record</h2>
+        <form action="/update/<%= x._id %>?_method=PATCH" method="POST">
+            <input type="hidden" name="_method" value="PUT">
+           
+        
+           
+            <!-- Populate input fields with existing data -->
+            <input type="text" value="<%= x.pname %>" name="pname" class="form-control" placeholder="Record Name">
+            <input type="text" value="<% x.doctor_name %>" name="dname" class="form-control" placeholder="Doctor Name">
+            <input type="date" value="<%= x.appointment_date %>" name="date" class="form-control" placeholder="Appointment Date">
+            <input type="text" value="<%= x.description %>" name="Description" class="form-control" placeholder="Description">
+            
+            <button type="submit" class="btn btn-danger btn-block mt-3">Update Record</button>
+        </form>
+        
+    </div>
+
+    <%- include('common/footer') %>
+</body>
+
+</html>

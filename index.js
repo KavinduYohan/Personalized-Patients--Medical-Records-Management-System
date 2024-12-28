@@ -40,10 +40,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Route for the landing page (home)
-app.get('/', (req, res) => {
-    res.render('home'); // Assuming 'home.ejs' is the landing page you want to load
-});
+
 
 // Use routers for different routes
 const patientRouter = require("./routers/patientRouter.js");

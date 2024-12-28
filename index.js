@@ -26,6 +26,13 @@ app.use(methodoverwride('_method'))
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.static('public'))
 
+// Route for the landing page (home)
+app.get('/', (req, res) => {
+    res.render('home');  // Assuming 'home.ejs' is the landing page you want to load
+});
+
+
+
 
 // session middleweare
 app.use(session({

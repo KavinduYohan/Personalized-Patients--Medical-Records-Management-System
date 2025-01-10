@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // Serve the favicon
-app.use(favicon(path.join(__dirname, 'public', 'favicon.ico'))); // Ensure 'favicon.ico' is in the public folder
+// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico'))); // Ensure 'favicon.ico' is in the public folder
 
 // Session middleware
 app.use(session({

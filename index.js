@@ -11,24 +11,34 @@ const myrouter = require('./routers/router');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
+const MongoStore = require('connect-mongo'); // For MongoDB session store
 
+// Load environment variables
 dotenv.config({ path: './config.env' });
+
+// MongoDB connection
 mongoose.connect(process.env.mongodburl, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log('MongoDB connection error: ', err));
 
+// Set view engine to EJS
 app.set('view engine', 'ejs');
 
+// Middleware setup
 app.use(methodoverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 
-// Session middleware
+// Session middleware (using MongoDB for session storage)
 app.use(session({
-    secret: 'nodejs',
-    resave: true,
-    saveUninitialized: true
+    secret: 'nodejs', 
+    resave: false, 
+    saveUninitialized: false, 
+    store: MongoStore.create({
+        mongoUrl: process.env.mongodburl, // MongoDB URL for session storage
+        ttl: 14 * 24 * 60 * 60 // 14 days session expiration
+    })
 }));
 
 // Flash middleware
@@ -41,15 +51,17 @@ app.use((req, res, next) => {
     next();
 });
 
-// Use routers for different routes
+// Define routes for different modules
 const patientRouter = require("./routers/patientRouter.js");
 const profileRouter = require("./routers/profileRouter.js");
 const Adrouter = require('./routers/AdminRouter.js');
 const doctorRouter = require("./routers/doctorRouter.js");
 let docd = require('./routers/docd.js');
 
+// Static files setup for uploads
 app.use('/upload', express.static('upload'));
 
+// Use routers for different routes
 app.use(doctorRouter);
 app.use(Adrouter);
 app.use(myrouter);
@@ -58,6 +70,7 @@ app.use(profileRouter);
 app.use(docd);
 
 // Start the server
-app.listen(process.env.PORT, () => {
-    console.log(process.env.PORT, "Port Working");
+const port = process.env.PORT || 3000; // Ensure fallback for local development
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });

@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');  // Add path module for resolving paths
 
+
 const myrouter = require('./routers/router');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -16,7 +17,7 @@ const MongoStore = require('connect-mongo'); // For MongoDB session store
 dotenv.config({ path: './config.env' });
 
 // MongoDB connection
-mongoose.connect(process.env.mongodburl, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log('MongoDB connection error: ', err));
 
@@ -28,14 +29,15 @@ app.use(methodoverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Session middleware (using MongoDB for session storage)
+
+// Session middleware setup
 app.use(session({
     secret: 'nodejs', 
     resave: false, 
     saveUninitialized: false, 
     store: MongoStore.create({
-        mongoUrl: process.env.mongodburl, // MongoDB URL for session storage
-        ttl: 14 * 24 * 60 * 60 // 14 days session expiration
+        mongoUrl: process.env.MONGODB_URL,  // Use the MongoDB URL from .env
+        ttl: 14 * 24 * 60 * 60 // Session expiration time (14 days)
     })
 }));
 
@@ -67,7 +69,8 @@ app.use(patientRouter);
 app.use(profileRouter);
 app.use(docd);
 
-// Export as a serverless function
-module.exports = (req, res) => {
-    app(req, res); // Pass the request and response to the express app
-};
+// Start the server
+const port = process.env.PORT || 3000; // Ensure fallback for local development
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});

@@ -6,7 +6,6 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');  // Add path module for resolving paths
 
-
 const myrouter = require('./routers/router');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -28,7 +27,6 @@ app.set('view engine', 'ejs');
 app.use(methodoverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
-
 
 // Session middleware (using MongoDB for session storage)
 app.use(session({
@@ -69,8 +67,7 @@ app.use(patientRouter);
 app.use(profileRouter);
 app.use(docd);
 
-// Start the server
-const port = process.env.PORT || 3000; // Ensure fallback for local development
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
+// Export as a serverless function
+module.exports = (req, res) => {
+    app(req, res); // Pass the request and response to the express app
+};

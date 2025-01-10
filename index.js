@@ -24,13 +24,12 @@ app.use(methodoverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Session middleware with MongoDB Store
 app.use(session({
     secret: 'nodejs',
     resave: true,
     saveUninitialized: true,
     store: MongoStore.create({
-        mongoUrl: process.env.mongodburl, // MongoDB connection string from the environment variable
+        mongoUrl: process.env.mongodburl, // Ensure this is set correctly
         ttl: 14 * 24 * 60 * 60 // 14 days session expiration
     })
 }));

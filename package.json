@@ -4,7 +4,7 @@
   "description": "Teac Coders",
   "main": "index.js",
   "engines": {
-    "node": "20.9.0.x"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "nodemon index.js",

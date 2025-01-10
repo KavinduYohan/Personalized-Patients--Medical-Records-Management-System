@@ -5,7 +5,7 @@ const methodoverride = require('method-override');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');  // Add path module for resolving paths
-const favicon = require('serve-favicon');  // Add the favicon package
+
 
 const myrouter = require('./routers/router');
 const bodyParser = require('body-parser');
@@ -23,8 +23,6 @@ app.use(methodoverride('_method'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Serve the favicon
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico'))); // Ensure 'favicon.ico' is in the public folder
 
 // Session middleware
 app.use(session({

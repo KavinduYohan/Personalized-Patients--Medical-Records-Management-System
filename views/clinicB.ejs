@@ -22,15 +22,22 @@
               <p class="card-text"><strong>SLMC Number:</strong> <%= doctor.slmcNumber %></p>
               <p class="card-text"><strong>Clinic:</strong> <%= doctor.clinic %></p>
               <!-- Reservation Button -->
-              <button class="btn btn-primary" data-toggle="modal" data-target="#reservationModal<%= doctor.id %>">
-                Make Reservation
-              </button>
+              <% if (typeof currentUserId !== 'undefined' && currentUserId || typeof patientId !== 'undefined' && patientId) { %>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#reservationModal<%= doctor.id || doctor._id %>">
+                  Make Reservation
+                </button>
+              <% } else { %>
+                <a href="/login" class="btn btn-primary">
+                  Make Reservation
+                </a>
+              <% } %>
             </div>
           </div>
         </div>
 
+        <% if (typeof currentUserId !== 'undefined' && currentUserId || typeof patientId !== 'undefined' && patientId) { %>
         <!-- Reservation Modal -->
-        <div class="modal fade" id="reservationModal<%= doctor.id %>" tabindex="-1" role="dialog" aria-labelledby="reservationModalLabel" aria-hidden="true">
+        <div class="modal fade" id="reservationModal<%= doctor.id || doctor._id %>" tabindex="-1" role="dialog" aria-labelledby="reservationModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
@@ -41,10 +48,9 @@
               </div>
               <div class="modal-body">
                 <!-- Reservation Form -->
-                <!-- Reservation Form -->
                 <form id="reservationForm" action="/reservationForm" method="POST">
                   <input type="hidden" name="docID" value="<%= doctor._id %>">
-                  <input type="hidden" name="patientId" value="<%= patientId %>"> <!-- Ensure patientId is provided here -->
+                  <input type="hidden" name="patientId" value="<%= typeof currentUserId !== 'undefined' && currentUserId ? currentUserId : (typeof patientId !== 'undefined' ? patientId : '') %>"> <!-- Ensure patientId is provided here -->
                   <div class="form-group">
                     <label for="name">Your Name</label>
                     <input type="text" class="form-control" id="name" name="name" required>
@@ -67,6 +73,17 @@
                     </select>
                   </div>
                   <div class="form-group">
+                    <label for="labTest">Laboratory / Diagnostic Test (Optional)</label>
+                    <select class="form-control" id="labTest" name="labTest">
+                      <option value="">-- None / Doctor Consultation Only --</option>
+                      <% if (typeof labTests !== 'undefined' && labTests && labTests.length > 0) { %>
+                        <% labTests.forEach(test => { %>
+                          <option value="<%= test.testname %>"><%= test.testname %></option>
+                        <% }); %>
+                      <% } %>
+                    </select>
+                  </div>
+                  <div class="form-group">
                     <label for="message">Message (Optional)</label>
                     <textarea class="form-control" id="message" name="message" rows="3"></textarea>
                   </div>
@@ -77,6 +94,7 @@
             </div>
           </div>
         </div>
+        <% } %>
       <% }); %>
     </div>
   </div>

@@ -31,7 +31,7 @@ const reservationSchema = new mongoose.Schema({
 // Custom validator to prevent overlapping reservations
 reservationSchema.path('timeSlot').validate(async function(value) {
   const reservationCount = await mongoose.models.Reservation.countDocuments({
-    doctor: this.doctor,
+    doctorId: this.doctorId,
     date: this.date,
     timeSlot: value,
     status: { $ne: 'rejected' }

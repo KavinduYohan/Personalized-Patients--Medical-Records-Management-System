@@ -71,8 +71,11 @@
                 <tr>
                   <td>
                     <div class="fw-bold text-dark">
-                      <%= resv.doctorId ? (resv.doctorId.name || 'Specialist Doctor') : 'Assigned Doctor' %>
+                      <%= resv.doctorId && resv.doctorId.name ? resv.doctorId.name : 'Specialist Doctor' %>
                     </div>
+                    <% if (resv.doctorId && resv.doctorId.specialization) { %>
+                      <small class="text-muted"><%= resv.doctorId.specialization %> (Clinic <%= resv.doctorId.clinic %>)</small>
+                    <% } %>
                   </td>
                   <td class="fw-bold text-dark"><%= new Date(resv.date).toLocaleDateString() %></td>
                   <td>

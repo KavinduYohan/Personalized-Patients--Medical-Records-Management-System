@@ -1,8 +1,9 @@
 const router = require("express").Router();
 let patient = require("../model/patient.js");
-let AdminTest = require("../model/AdminTest.js");
 let empmodel = require('../model/model')
-
+let Doctors = require('../model/Doctors.js');
+const AdminTest = require('../model/AdminTest.js');
+let reservation = require("../model/reservation.js");
 
 router.get('/addfiles', async(req, res) => {
   const tests = await AdminTest.find()
@@ -66,69 +67,151 @@ router.post('/register', async (req, res) => {
 
 // Login route
 router.get('/login', (req, res) => {
+  if (req.session.userId) {
+    if (req.session.userRole === 'admin') return res.redirect('/adminPanel');
+    if (req.session.userRole === 'doctor') return res.redirect('/doctor');
+    return res.redirect('/');
+  }
   res.render('login', { error: req.flash('error') });
 });
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password ,role } = req.body;
-    const result = await patient.findOne({ email: email });
+    const { email, password } = req.body;
+    const user = await patient.findOne({ email: email });
 
-    const count = await empmodel.countDocuments();
-   
+    if (user && user.password === password) {
+      req.session.userId = user._id;
+      req.session.userRole = user.role;
+      req.session.userName = user.name;
 
-    if (result && result.password === password) {
-      req.session.userId = result._id; // Store user ID in session upon successful login
-      
-      if(result.role == 'doctor'){
-        res.render('doctor', { userId: result._id }); // Pass the user ID to the home page
-      }if(result.role == 'admin'){
-        const empData = await patient.find({});
-        const roleCounts = empData.reduce((acc, curr) => {
-          if (curr.role === 'patient') {
-            acc.patient++;
-          } else if (curr.role === 'doctor') {
-            acc.doctor++;
-          } else if (curr.role === 'admin') {
-            acc.admin++;
-          }
-          return acc;
-        }, { patient: 0, doctor: 0, admin: 0 });
-        
-        
-        const monthCounts = await patient.aggregate([
-          {
-              $group: {
-                  _id: "$month",
-                  count: { $sum: 1 }
-              }
-          }
-      ]);
-      
-      const countsByMonth = {};
-      monthCounts.forEach(({ _id, count }) => {
-          countsByMonth[_id] = count;
-      });
-      
-      
-      
-    
-      
-
-    // Render your view or send the retrieved data to the client
-      res.render('adminPanel', { result,empData , roleCounts , count,countsByMonth});
-        //res.render('adminPanel', { userId: result._id }); // Pass the user ID to the home page
-      }else {
-        res.render('home', { userId: result._id }); // Pass the user ID to the home page
+      if (user.role === 'doctor') {
+        return res.redirect('/doctor');
+      } else if (user.role === 'admin') {
+        return res.redirect('/adminPanel');
+      } else {
+        return res.redirect('/');
       }
-     
     } else {
-      req.flash('error', 'Invalid credentials');
-      res.render('login', { error: req.flash('error') }); // Render login with error
+      req.flash('error', 'Invalid email or password');
+      return res.redirect('/login');
     }
   } catch (err) {
-    req.flash('error', 'Internal server error');
-    res.render('login', { error: req.flash('error') }); // Render login with error
+    console.error("Login error:", err);
+    req.flash('error', 'Internal server error occurred');
+    return res.redirect('/login');
+  }
+});
+
+// Admin Panel route
+router.get('/adminPanel', async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      req.flash('error', 'Please log in as an administrator');
+      return res.redirect('/login');
+    }
+
+    const currentAdmin = await patient.findById(userId);
+    if (!currentAdmin || currentAdmin.role !== 'admin') {
+      req.flash('error', 'Unauthorized access');
+      return res.redirect('/');
+    }
+
+    const empData = await patient.find({});
+    const roleCounts = empData.reduce((acc, curr) => {
+      if (curr.role === 'patient') acc.patient++;
+      else if (curr.role === 'doctor') acc.doctor++;
+      else if (curr.role === 'admin') acc.admin++;
+      return acc;
+    }, { patient: 0, doctor: 0, admin: 0 });
+
+    const monthCounts = await patient.aggregate([
+      {
+        $group: {
+          _id: "$month",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const countsByMonth = {};
+    monthCounts.forEach(({ _id, count }) => {
+      if (_id) countsByMonth[_id] = count;
+    });
+
+    const docdModel = require('../model/docd');
+    const doctorRequests = await docdModel.find({});
+
+    const clinicsCount = await require('../model/Clinicadd').countDocuments();
+    const reservationsCount = await require('../model/reservation').countDocuments();
+
+    res.render('adminPanel', {
+      empData,
+      roleCounts,
+      countsByMonth,
+      doctorRequests,
+      clinicsCount,
+      reservationsCount,
+      user: currentAdmin
+    });
+  } catch (error) {
+    console.error("Admin panel error:", error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// User profile route
+router.get('/profile', async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) {
+      req.flash('error', 'Please log in to view your profile');
+      return res.redirect('/login');
+    }
+
+    const user = await patient.findById(userId);
+    let profile = await require('../model/userprofile').findOne({ patientId: userId });
+
+    res.render('profileEdit', { user, profile, userId });
+  } catch (error) {
+    console.error("Profile route error:", error);
+    res.redirect('/');
+  }
+});
+
+router.post('/profileEdit', async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) return res.redirect('/login');
+
+    const profileData = {
+      fullName: req.body.name || req.body.fullName,
+      dob: req.body.dob,
+      nic: req.body.nic,
+      civilStatus: req.body.civilStatus,
+      gender: req.body.gender,
+      religion: req.body.religion,
+      occupation: req.body.occupation,
+      address: req.body.address,
+      mobileNo: req.body.mobileNo,
+      birthPlace: req.body.birthPlace,
+      bloodGroup: req.body.bloodGroup,
+      patientId: userId
+    };
+
+    await require('../model/userprofile').findOneAndUpdate(
+      { patientId: userId },
+      profileData,
+      { upsert: true, new: true }
+    );
+
+    req.flash('success', 'Profile updated successfully!');
+    res.redirect('/profile');
+  } catch (error) {
+    console.error("Profile update error:", error);
+    req.flash('error', 'Failed to update profile');
+    res.redirect('/profile');
   }
 });
 
@@ -155,7 +238,6 @@ router.get('/pms/:id', async (req, res) => {
 
 
 
-
 // fetch or get 
 router.route("/").get((req, res) => {
   patient.find().then((patient) => {
@@ -165,169 +247,31 @@ router.route("/").get((req, res) => {
   })
 })
 
-//update individual record
-
-router.route("/edit/:id").put(async (req, res) => {
-
-  let userId = req.params.id;
-  //const name = req.body.name; mehemt puluwm req eken ena data store krgnna or else 
-  const { name, email, password } = req.body; // destructuring method
-
-  const updatePatient = {  // kalin wge object hdlth puluwnn
-    name,
-    email,
-    password
-
-  }
-  //userID as 1st parameter and updatePatient as 2nd paramter
-  const update = await patient.findByIdAndUpdate(userId, updatePatient) //updatePatient hdnn nathuwwa kelinm dnnth puluwnn //findone ekei wge hoynw nn email eken wge hoynw nn //
-    .then(() => {
-      res.status(200).send({ status: "user updated" })  // succuss nn 200 dnne
-    }).catch((err) => {
-      console.log(err);
-      res.status(500).send({ status: "error with updating data", error: err.massage }); // UI ekat send krnw  // 500 kiynne server error 
-    })
-
-  // delete patient
-
-  // router.route("/delete/:id").delete(async (req, res) => {
-  //   let userId = req.params.id;
-
-  //   await patient.findByIdAndDelete(userId).then(() => {
-  //     res.status(200).send({ status: "user deleted" });
-  //   }).catch((err) => {
-  //     console.log(err.massage);
-  //     res.status(500).send({ status: "error with delete patient ", error: err.massage }); // UI ekat send krnw  // 500 kiynne internal server error 
-  //   })
-  // })
-
-})
-
-//get one user data
-
-router.route("/get/:id").get(async (req, res) => {
-  let userId = req.params.id;
-
-  const user = await patient.findById(userId)
-    .then((patient) => {
-      res.status(200).send({ status: "user fetached", patient })
-    }).catch((err) => {
-      console.log(err.massage);
-      res.status(500).send({ status: "error with Fetch patient ", error: err.massage }); // UI ekat send krnw  // 500 kiynne internal server error 
-    })
-})
-
-//vital healt matrics
-router.get('/vitalHealthMatrics/BMI/bmigraph', (req, res) => {
-  res.render('vitalHealthMatrics/BMI/bmigraph'); // Render the 'bmigraph' view
-});
-
-router.get('/vitalHealthMatrics/Cholesterol/colo', (req, res) => {
-  res.render('vitalHealthMatrics/Cholesterol/colo'); // Render the 'bmigraph' view
-});
-
-
-//add test
-
-router.get('/addTest', (req, res) => {
-  
-  res.render('addTest'); 
-});
-
- 
-router.post("/addTest", async (req, res) => {
-  try {
-    const patientId = req.session.userId; 
-
-    if (!patientId) {
-      
-      req.flash('error', 'Please log in as a patient');
-      res.redirect('/login');
-      return;
-    }
-
-   
-    const testName = req.body.pname;
-
- 
-    const newTestRecord = new TestRecord({ pname: testName });
-    await newTestRecord.save();
-
-    req.flash('success', 'Test record added successfully');
-    res.redirect('/TestRecord'); 
-  } catch (error) {
-    req.flash('error', 'Error adding test record');
-    res.redirect('/addTest'); 
-  }
-});
-
-
-
-router.get('/TestRecord', async (req, res) => {
-  try {
-    const patientId = req.session.userId; 
-
-    if (!patientId) {
-      // Handle case if patient is not logged in
-      req.flash('error', 'Please log in as a patient');
-      res.redirect('/login');
-      return;
-    }
-
-   
-    const empData = await AdminTest.find({});
-
-    // Render your view or send the retrieved data to the client
-    res.render('TestRecord', { empData });
-    
-  } catch (error) {
-    req.flash('error', 'Error fetching data');
-    res.redirect('/'); // Redirect to the desired route or handle the error accordingly
-  }
-});
-
-
-
-router.delete("/del/:id", async (req, res) => {
+// Update individual patient record
+router.put("/edit/:id", async (req, res) => {
   try {
     const userId = req.params.id;
+    const { name, email, password } = req.body;
+    const updatePatient = { name, email, password };
 
-    const deletedUser = await patient.findByIdAndDelete(userId);
-
-    if (deletedUser) {
-      // res.status(200).send({ status: "User deleted", user: deletedUser });
-      res.redirect('/');
-      
-    } else {
-      
-      res.status(404).send({ status: "User not found" });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ status: "Error deleting user", error: error.message });
+    await patient.findByIdAndUpdate(userId, updatePatient);
+    res.status(200).send({ status: "user updated" });
+  } catch (err) {
+    console.error("Update error:", err);
+    res.status(500).send({ status: "error with updating data", error: err.message });
   }
 });
 
-router.get('//', (req, res)=>{
-  patient.find({})
-  .then((x)=>{
-      res.render('adminpanel', {x})
-  })
-  .catch((y)=>{
-      console.log(y)
-  })
-  
-})
-
-router.get('///', (req, res)=>{
-  patient.find({})
-  .then((x)=>{
-      res.render('doctor', {x})
-  })
-  .catch((y)=>{
-      console.log(y)
-  })
-  
-})
+// Delete patient record
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    await patient.findByIdAndDelete(userId);
+    res.status(200).send({ status: "user deleted" });
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).send({ status: "error with delete patient", error: err.message });
+  }
+});
 
 module.exports = router;

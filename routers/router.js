@@ -2,478 +2,288 @@ let express = require('express');
 let empmodel = require('../model/model')
 let emprouter = express();
 let patient = require("../model/patient.js");
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-let AdminTest = require("../model/AdminTest");
+let Doctor = require("../model/Doctors.js");
+const Clinic = require('../model/Clinicadd');
 
 
 
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'upload/'); // Set the destination folder for uploaded files
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now()) // Set the filename to be unique
-  },
-});
-
-const upload = multer({ storage: storage });
-
-
-
-
-
+// page eken back unama redirect wena thana 
+// Home page route
 emprouter.get('/', async (req, res) => {
   try {
     const patientId = req.session.userId;
-    const role = await patient.findById(patientId);
-    const result = patientId
+    const clinics = await Clinic.find({}).populate('doctors');
 
-    if (role && role.role === 'doctor') {
-      empmodel.find({})
-        .then((x) => {
-          res.render('doctor', { x });
-        });
-
-    }else if (role && role.role === 'admin') {
-
-      const count = await empmodel.countDocuments();
-
-      const empData = await patient.find({});
-      const roleCounts = empData.reduce((acc, curr) => {
-        if (curr.role === 'patient') {
-          acc.patient++;
-        } else if (curr.role === 'doctor') {
-          acc.doctor++;
-        } else if (curr.role === 'admin') {
-          acc.admin++;
-        }
-        return acc;
-      }, { patient: 0, doctor: 0, admin: 0 });
-
-      const monthCounts = await patient.aggregate([
-        {
-            $group: {
-                _id: "$month",
-                count: { $sum: 1 }
-            }
-        }
-    ]);
-    
-    const countsByMonth = {};
-    monthCounts.forEach(({ _id, count }) => {
-        countsByMonth[_id] = count;
-    });
-      
-  // Render your view or send the retrieved data to the client
-    res.render('adminPanel', { result,empData , roleCounts , count , countsByMonth});
-
-
-    } else {
-      empmodel.find({})
-        .then((x) => {
-          res.render('home', { x });
-        })
-        .catch((y) => {
-          console.log(y);
-          res.status(500).send('Error fetching data');
-        });
+    if (patientId) {
+      const user = await patient.findById(patientId);
+      if (user && user.role === 'admin') {
+        return res.redirect('/adminPanel');
+      }
     }
+
+    res.render('home', { clinics, userId: patientId });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal server error');
+    console.error("Home route error:", error);
+    res.render('home', { clinics: [], userId: req.session.userId });
   }
 });
 
+// Logout for all roles (Patient, Doctor, Admin)
+emprouter.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Logout error:", err);
+    }
+    res.clearCookie('connect.sid');
+    res.redirect('/login');
+  });
+});
 
-emprouter.post('/addfiles', upload.single('prescriptionPhoto'), async (req, res) => {
+emprouter.get('/Clinic1', (req, res) => {
+  res.render('Clinic1');
+});
+
+emprouter.get('/doctor11', (req, res) => {
+  res.render('doctor11'); // 
+
+
+// emprouter.post('/doctor11', async (req, res) => {
+//     try {
+//         const { name, specialization, about, slmcNumber, image } = req.body;
+
+//         const newDoctor = new Doctor({
+//             name,
+//             specialization,
+//             about,
+//             slmcNumber,
+//             image
+//         });
+
+//         await newDoctor.save();
+//         res.status(201).json(newDoctor);
+//     } catch (error) {
+//         console.error('Error adding doctor:', error);
+//         res.status(500).json({ error: 'Failed to add doctor' });
+//     }
+// });
+});
+
+
+
+
+emprouter.post('/BecomeDoctor', async (req, res) => {
   try {
-    const patientId = req.session.userId; // Retrieve patient ID from the session
-    const role = await patient.findById(patientId)
-   
-
+    const patientId = req.session.userId;
 
     if (!patientId) {
-      req.flash('error', 'Please log in as a patient');
+      req.flash('error', 'Please log in as a patient first');
       return res.redirect('/login');
     }
 
-    const data = {
-      pname: req.body.pname,
-      doctor_name: req.body.dname,
-      appointment_date: req.body.date,
-      testname:req.body.testname,
-      description: req.body.description,
-      prescriptionPhoto: req.file.filename,// Store only the filename as a string
-      patientId: patientId,
+    const currentPatient = await patient.findById(patientId);
+    const docData = {
+      dname: req.body.name,
+      specialization: req.body.specialization,
+      description: req.body.about,
+      slmc: req.body.slmcNumber,
+      email: currentPatient ? currentPatient.email : (req.body.email || ''),
+      ex: req.body.clinic || 'A',
+      patientId: patientId
     };
 
+    const docdModel = require('../model/docd');
+    await docdModel.create(docData);
 
-    await empmodel.create(data);
-    req.flash('success', 'Data has been created in the Database');
-    if (role.role == 'doctor') {
-      res.redirect('doctor');
-    } else {
-      res.redirect('/');
-    }
-
+    req.flash('success', 'Your application to become a doctor has been submitted for Admin approval!');
+    res.redirect('/');
   } catch (error) {
-    console.error(error);
-    req.flash('error', 'Data has not been created in the Database');
+    console.error("Error submitting doctor application:", error);
+    req.flash('error', 'Failed to submit application: ' + error.message);
     res.redirect('/');
   }
 });
-// emprouter.post('/addfiles', upload.single('prescriptionPhoto'), async (req, res) => {
+
+
+emprouter.get('/addclinic', (req, res) => {
+  res.render('addclinic'); // 
+
+});
+
+
+
+// emprouter.post('/addclinic', async (req, res) => {
 //   try {
-//     const patientId = req.session.userId; // Retrieve patient ID from the session
-//     const role = await patient.findById(patientId)
+//     const { clinicName, location, licenceNumber, description, services, doctorDetails } = req.body;
 
+//     const clinic = new Clinic({
+//       clinicName,
+//       location,
+//       licenceNumber,
+//       description,
+//       services,
+//       doctors: doctorDetails
+//     });
 
-//     if (!patientId) {
-//       req.flash('error', 'Please log in as a patient');
-//       return res.redirect('/login');
-//     }
-
-//     const data = {
-//       pname: req.body.pname,
-//       doctor_name: req.body.dname,
-//       appointment_date: req.body.date,
-//       testname:req.body.testname,
-//       description: req.body.description,
-//       prescriptionPhoto: req.file.filename,// Store only the filename as a string
-//       patientId: patientId,
-//     };
-
-
-//     await empmodel.create(data);
-//     req.flash('success', 'Data has been created in the Database');
-//     if (role.role == 'doctor') {
-//       res.redirect('doctor');
-//     } else {
-//       res.redirect('/');
-//     }
-
+//     await clinic.save();
+//     res.status(201).send("Clinic registered successfully");
 //   } catch (error) {
-//     console.error(error);
-//     req.flash('error', 'Data has not been created in the Database');
-//     res.redirect('/');
+//     console.error("Error registering clinic:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
+
+// emprouter.post('/addclinic', async (req, res) => {
+//   try {
+//     const { clinicName, location, licenceNumber, description, services, doctorDetails } = req.body;
+
+//     if (!clinicName || !location || !licenceNumber || !doctorDetails) {
+//       return res.status(400).send("Missing required clinic fields");
+//     }
+
+//     const doctorIds = [];
+
+//     // Loop through each doctor in the details
+//     for (const doctor of doctorDetails) {
+//       const { name, clinic, specialization, about, slmcNumber, image } = doctor;
+
+//       if (!name || !specialization || !slmcNumber) {
+//         return res.status(400).send("Missing required doctor fields");
+//       }
+
+//       const newDoctor = new Doctor({
+//         name,
+//         clinic,
+//         specialization,
+//         about,
+//         slmcNumber,
+//         image
+//       });
+
+//       const savedDoctor = await newDoctor.save();
+//       doctorIds.push(savedDoctor._id);
+//     }
+
+//     // Create the clinic with references to the doctors
+//     const clinic = new Clinic({
+//       clinicName,
+//       location,
+//       licenceNumber,
+//       description,
+//       services,
+//       doctors: doctorIds
+//     });
+
+//     await clinic.save();
+//     res.status(201).send("Clinic and doctors registered successfully");
+//   } catch (error) {
+//     console.error("Error registering clinic and doctors:", error);
+//     res.status(500).send("Internal Server Error");
 //   }
 // });
 
 
 
-
-
-
-
-
-
-
-
-
-// emprouter.post('/addfiles', async (req, res) => {
-//     try {
-//       const patientId = req.session.userId; // Retrieve patient ID from the session
-  
-//       if (!patientId) {
-//         // Handle case if patient is not logged in
-//         req.flash('error', 'Please log in as a patient');
-//         res.redirect('/login');
-//         return;
-//       }
-      
-//       const data = {
-//         pname: req.body.pname,
-//         doctor_name: req.body.dname,
-//         appointment_date: req.body.date,
-//         description: req.body.description,
-//         patientId: patientId // Include the patientId when creating empmodel data
-//       };
-  
-//       await empmodel.create(data);
-//       req.flash('success', 'Data has been created in the Database');
-//       res.redirect('/');
-//     } catch (error) {
-//       req.flash('error', 'Data has not been created in the Database');
-//       res.redirect('/');
-//     }
-//   });
-  
-// Assuming you want to retrieve empmodel data related to a specific patient after they've logged in
-
-
-emprouter.get('/show', async (req, res) => {
+emprouter.post('/addclinic', async (req, res) => {
   try {
-    const patientId = req.session.userId; // Retrieve patient ID from the session
+    const { clinicName, location, licenceNumber, description, services, doctorDetails } = req.body;
 
-    if (!patientId) {
-      // Handle case if patient is not logged in
-      req.flash('error', 'Please log in as a patient');
-      res.redirect('/login');
-      return;
+    // Validate clinic fields
+    if (!clinicName || !location || !licenceNumber || !description || !services || !Array.isArray(doctorDetails)) {
+      return res.status(400).send("Missing required clinic fields or doctor details");
     }
 
-    // Find empmodel data related to the patientId
-    const empData = await empmodel.find({ patientId }).populate('patientId');
+    const doctorIds = [];
+    const validClinics = ['A', 'B', 'C']; // Replace with your actual enum values
 
-    
-    // Render your view or send the retrieved data to the client
-    res.render('patientRecordtable', { empData });
-  } catch (error) {
-    req.flash('error', 'Error fetching data');
-    res.redirect('/'); // Redirect to the desired route or handle the error accordingly
-  }
-});
-  
+    for (const doctor of doctorDetails) {
+      const { name, clinic, specialization, about, slmcNumber, image, email } = doctor;
 
-// update a tuple
-emprouter.get('/update/:id', async (req, res) => {
-  try {
-    const readquery = req.params.id;
-    const record = await empmodel.findById(readquery);
-    
-    if (record) {
-      res.render('update', { x: record });
-    } else {
-      // Handle case where the record with the given ID is not found
-      res.status(404).send('Record not found');
-    }
-  } catch (error) {
-    // Handle error if any occurs during the database operation
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-
-//update // edit krna tuple eka newe update wenne database eke udam thiyn eka & eeka patientId ekatt wetenw
-emprouter.patch('/update/:id', async (req, res) => {
-  try {
-    const patientId = req.session.userId;
-    const role = await patient.findById(patientId) // Get the user ID from the session
-    const entryId = req.params.id; // Get the ID from URL parameter
-
-    
-    // Find the specific entry to update using its ID and the logged-in user's ID
-    const updatedEntry = await empmodel.findOneAndUpdate(
-      { _id: entryId }, // Query condition
-      {
-        $set: {
-          pname: req.body.pname,
-          doctor_name: req.body.dname,
-          appointment_date: req.body.date,
-          description: req.body.Description,
-          // Update other fields as needed
-        }
-      },
-      { new: true } // To get the updated document after the update operation
-    );
-    if (role.role == 'doctor') {
-      if (updatedEntry) {
-        // Handle successful update
-        req.flash('success', 'Entry updated successfully');
-        res.render('doctor'); // Redirect to a success page or specific route
-      } else {
-        // Handle case where the entry to update wasn't found or the user isn't authorized
-        req.flash('error', 'Failed to update entry');
-        res.render('doctor');
-      }
-    } else {
-      if (updatedEntry) {
-        // Handle successful update
-        req.flash('success', 'Entry updated successfully');
-        res.redirect('/'); // Redirect to a success page or specific route
-      } else {
-        // Handle case where the entry to update wasn't found or the user isn't authorized
-        req.flash('error', 'Failed to update entry');
-        res.redirect('/');
+      // Validate doctor fields
+      if (!name || !specialization || !slmcNumber || !clinic || !validClinics.includes(clinic) || !email ) {
+        console.error("Invalid or missing doctor fields in doctor object:", doctor);
+        return res.status(400).send("Invalid or missing doctor fields");
       }
 
+      // Create corresponding user in Register schema with default password
+      const defaultPassword = '123456';
+
+      const newUser = new patient({
+        name,
+        email,
+        password: defaultPassword,
+        cpassword: defaultPassword, // Ensure cpassword is also set
+        role: 'doctor'
+      });
+
+      const savedUser = await newUser.save();
+
+      // Create new Doctor
+      const newDoctor = new Doctor({
+        name,
+        clinic,
+        specialization,
+        about,
+        slmcNumber,
+        image,
+        email,
+        docID: savedUser._id // Assign the Register ID to docID
+      });
+
+      const savedDoctor = await newDoctor.save();
+      doctorIds.push(savedDoctor._id);
     }
 
-  } catch (error) {
-    console.error(error);
-    // Handle error case
-    req.flash('error', 'Internal server error');
-    res.redirect('/');
-  }
-});
-
-emprouter.get('/adminedit/:id', async (req, res) => {
-  try {
-    const readquery = req.params.id;
-    const record = await patient.findById(readquery);
-    
-    if (record) {
-      res.render('EditRole', { data: record });
-    } else {
-      // Handle case where the record with the given ID is not found
-      res.status(404).send('Record not found');
-    }
-  } catch (error) {
-    // Handle error if any occurs during the database operation
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-
-
-emprouter.patch('/admintest/:id', async (req, res) => {
-  
-  try {
-     // Get the user ID from the session
-    const entryId = req.params.id; // Get the ID from URL parameter
-
-    // Find the specific entry to update using its ID and the logged-in user's ID
-
-    
-    const updatedEntry = await patient.findOneAndUpdate(
-      { _id: entryId}, // Query condition
-      {
-        $set: {
-
-          role: req.body.role,
-         
-          // Update other fields as needed
-        }
-  
-      },
-      { new: true } // To get the updated document after the update operation
-    );
-  0
-
-    if (updatedEntry) {
-      // Handle successful update
-      req.flash('success', 'Entry updated successfully');
-      res.redirect('/'); // Redirect to a success page or specific route
-    } else {
-      // Handle case where the entry to update wasn't found or the user isn't authorized
-      req.flash('error', 'Failed to update entry');
-      res.redirect('/');
-    }
-  } catch (error) {
-    console.error(error);
-    // Handle error case
-    req.flash('error', 'Internal server error');
-    res.redirect('/');
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //one user fetching
-  emprouter.route("/get/:id").get(async (req, res) => {
-    let userId = req.params.id;
-  
-    const user = await empmodel.findById(userId)
-      .then((patient) => {
-        res.status(200).send({ status: "user fetached", patient })
-      }).catch((err) => {
-        console.log(err.massage);
-        res.status(500).send({ status: "error with Fetch patient ", error: err.massage }); // UI ekat send krnw  // 500 kiynne internal server error 
-      })
-  })
-
-//delete
-emprouter.delete("/delete/:id", async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const patientId = req.session.userId; // Retrieve patient ID from the session
-    const role = await patient.findById(patientId)
-
-
-    const deletedUser = await empmodel.findByIdAndDelete(userId);
-
-
-    if (role.role == 'doctor') {
-      if (deletedUser) {
-        // res.status(200).send({ status: "User deleted", user: deletedUser });
-        res.render('doctor');
-
-
-      } else {
-        res.status(404).send({ status: "User not found" });
-      }
-
-    } else {
-      if (deletedUser) {
-        // res.status(200).send({ status: "User deleted", user: deletedUser });
-        res.redirect('/');
-
-
-      } else {
-        res.status(404).send({ status: "User not found" });
-      }
-
-    }
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ status: "Error deleting user", error: error.message });
-  }
-});
-
-
-
-
-//logout
-emprouter.get('/logout', async (req, res) => {
-  try {
-    // Retrieve patient ID from the session
-    const patientId = req.session.userId;
-
-    if (!patientId) {
-      // Handle case if patient is not logged in
-      req.flash('error', 'Please log in as a patient');
-      return res.redirect('/login');
-    }
-
-    // Clear the session data (including userId)
-    req.session.destroy(err => {
-      if (err) {
-        req.flash('error', 'Error logging out');
-        return res.redirect('/');
-      }
-
-      // Redirect to the home page after successful logout
-      res.clearCookie('session-id'); // Clearing any associated cookies (optional)
-      res.locals.loggedOut = true;
-      res.render('home'); // Redirect to the home page
-
-      // This alert message will be shown using client-side JavaScript
-      // Send a success flag to the client-side to trigger the alert
-      //res.locals.loggedOut = true;
+    // Create the clinic with references to the doctors
+    const clinic = new Clinic({
+      clinicName,
+      location,
+      licenceNumber,
+      description,
+      services,
+      doctors: doctorIds
     });
+
+    await clinic.save();
+    res.status(201).send("Clinic and doctors registered successfully");
   } catch (error) {
-    req.flash('error', 'Error logging out');
-    res.redirect('/'); // Redirect to the desired route or handle the error accordingly
+    console.error("Error registering clinic and doctors:", error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
 
-emprouter.get('/BecomeDoctor', (req, res) => {
-  res.render('BecomeDoctor'); // Render the 'bmigraph' view
+
+
+
+
+
+
+
+
+
+
+
+
+// emprouter.get('/clinic', async (req, res) => {
+//   try {
+//     const clinic = await Clinic.find().exec();
+//     res.render('clinic', { clinic }); // Render a template with all clinics
+//   } catch (error) {
+//     console.error('Error fetching clinics:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
+// All clinics overview
+emprouter.get('/clinic', async (req, res) => {
+  try {
+    const clinics = await Clinic.find({}).populate('doctors').exec();
+    res.render('clinic', { clinics, userId: req.session.userId });
+  } catch (error) {
+    console.error('Error fetching clinics:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
-
-
 
 
   

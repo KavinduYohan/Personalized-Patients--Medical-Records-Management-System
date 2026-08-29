@@ -1,50 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <title>Login page</title>
-  
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Medicare Centralized System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="/style.css">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  
-  
 </head>
-
 <body>
-  <div class="login-container">
-  <h2>Sign up</h2>
+  <div class="auth-wrapper">
+    <div class="auth-card" style="max-width: 480px;">
+      <div class="auth-header">
+        <div class="auth-logo">
+          <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <h2 class="auth-title">Create Account</h2>
+        <p class="auth-subtitle">Join Medicare to book appointments & manage health records</p>
+      </div>
 
- 
+      <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+        <div class="alert-message alert-error">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= error %>
+        </div>
+      <% } %>
 
-  <form  action='/register' method="post">
-    <% if (typeof error !== 'undefined' && error !== null) { %>
-      <p><%= error %></p>
-    <% } %>
+      <form action="/register" method="POST">
+        <div class="form-group mb-3">
+          <label class="form-label" for="name">Full Name</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-person text-muted"></i></span>
+            <input type="text" class="form-control" id="name" name="name" placeholder="John Doe" required>
+          </div>
+        </div>
 
-    <div>
-      <input type="text" id="name" name="name" placeholder="Name" required>
+        <div class="form-group mb-3">
+          <label class="form-label" for="email">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-envelope text-muted"></i></span>
+            <input type="email" class="form-control" id="email" name="email" placeholder="john@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label" for="password">Password (minimum 6 characters)</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-lock text-muted"></i></span>
+            <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Create a password" required>
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="cpassword">Confirm Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-shield-check text-muted"></i></span>
+            <input type="password" class="form-control" id="cpassword" name="cpassword" minlength="6" placeholder="Re-enter password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-gradient mb-3">
+          <i class="bi bi-person-check me-2"></i> Create Free Account
+        </button>
+      </form>
+
+      <div class="text-center mt-3">
+        <p class="text-muted small mb-0">Already registered? <a href="/login" class="fw-bold text-primary text-decoration-none">Login Here</a></p>
+      </div>
+
+      <div class="mt-4 pt-3 border-top text-center">
+        <a href="/" class="small text-decoration-none text-muted"><i class="bi bi-arrow-left me-1"></i> Back to Homepage</a>
+      </div>
     </div>
+  </div>
 
-    <div>
-      <input type="email" id="email" name="email" placeholder="Email" required>
-    </div>
-
-    <div>
-      <input type="password" id="password" name="password" placeholder="Password" required>
-    </div>
-
-    <div>
-      <input type="password" id="cpassword" name="cpassword" placeholder="Confirm Password" required>
-    </div>
-
-    <div>
-      <input type="submit" value="Register" class ="button">
-    </div>
-
-    <p>Already Registerd?<a href='/login'> Login here</a></p>
-  </form>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

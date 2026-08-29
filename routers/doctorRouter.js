@@ -1,57 +1,57 @@
 const router1 = require("express").Router();
-let patient = require("../model/patient.js");
-let empmodel = require('../model/model')
-let patientProfile = require('../model/userprofile');
+const Reservation = require("../model/reservation");
+const Patient = require("../model/patient");
+const Doctor = require("../model/Doctors");
 
-
-// Route to render the search form
-
-router1.get("/search", (req, res) => {
-  res.render('Doctorsearch-file', { empData: '' ,empprofile : ''});
-});
-
-// Route to handle search requests based on user-entered email
-router1.get('/searchByEmail', async (req, res) => {
-  const email = req.query.email; // Retrieve email from the query parameters
-  
+router1.get("/doctor", async (req, res) => {
   try {
-    
-      const foundPatient = await patient.findOne({ email: email }); // Search for patient by email
-      if(!foundPatient){
-        console.log("errorr email")
-        res.redirect("/search")
-      }else {
-        const patientId = foundPatient._id;
-      const empprofile = await empmodel.find({ patientId }).populate('patientId');
-      const empData = await patientProfile.find({ patientId }).populate('patientId');
+    const userId = req.session.userId;
+    if (!userId) {
+      req.flash('error', 'Please log in as a doctor');
+      return res.redirect('/login');
+    }
 
-      //console.log(empprofile)
-      // console.log(patientId)
-      // console.log(empData)
-      // if (foundPatient) {
-      //   const patientId = foundPatient._id; // Obtain the ObjectId of the patient
-      //   console.log(patientId);
-      //  const empData = await empmodel.find({ patientId }).populate('patientId');
-  
-      // } else {
-      //   console.log('Patient not found');
-      //   // Handle the case where no patient with the given email is found
-      // }
-      res.render('Doctorsearch-file', { empData: empData , empprofile : empprofile }); // Render the EJS file with search results
+    const currentDoc = await Patient.findById(userId);
+    if (!currentDoc || currentDoc.role !== 'doctor') {
+      req.flash('error', 'Unauthorized access');
+      return res.redirect('/');
+    }
+
+    // Retrieve doctor profile
+    const doctorProfile = await Doctor.findOne({ docID: userId });
+
+    // Retrieve reservations
+    const reservations = await Reservation.find({ doctorId: userId }).sort({ date: -1 });
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const todayAppointments = reservations.filter(r => {
+      const rDate = new Date(r.date);
+      return rDate >= todayStart && rDate <= todayEnd;
+    }).length;
+
+    // Count unique patients
+    const patientIds = new Set(reservations.map(r => r.patientId ? r.patientId.toString() : ''));
+    patientIds.delete('');
+    const totalPatients = patientIds.size;
+
+    res.render('doctor', {
+      user: currentDoc,
+      doctorProfile,
+      reservations,
+      stats: {
+        todayAppointments,
+        totalPatients,
+        totalReservations: reservations.length
       }
-      
-    
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Internal Server Error');
+    });
+  } catch (error) {
+    console.error("Doctor dashboard error:", error);
+    res.redirect('/');
   }
 });
-
-router1.get("/doctor", (req, res) => {
-  res.render('doctor');
-});
-
-
-  
 
 module.exports = router1;

@@ -1,8 +1,8 @@
 const Adrouter = require("express").Router();
 let AdminTest = require("../model/AdminTest");
-let patientProfile = require('../model/userprofile');
 let patient = require("../model/patient.js");
 let docd = require("../model/docd");
+let Doctor = require("../model/Doctors.js");
 
 Adrouter.get('/addTest', (req, res) => { 
 
@@ -40,57 +40,59 @@ Adrouter.post('/addTest', async (req, res) => {
 
 Adrouter.get('/Accept/:id', async (req, res) => {
   try {
-   
-    const readquery = req.params.id;
-    const doctor = await docd.findById(readquery)
-    const emailtest = doctor.email;
-    const result = await patient.findOne({ email: emailtest });
-    
-    if (result.email == emailtest) {
+    const requestId = req.params.id;
+    const doctorRequest = await docd.findById(requestId);
 
-      const updatedEntry = await patient.findOneAndUpdate(
-        { _id: result}, // Query condition
+    if (!doctorRequest) {
+      req.flash('error', 'Doctor application not found');
+      return res.redirect('/adminPanel');
+    }
+
+    const patientUser = await patient.findOne({ email: doctorRequest.email });
+
+    if (patientUser) {
+      await patient.findByIdAndUpdate(patientUser._id, { role: 'doctor' });
+
+      // Create or update doctor record
+      await Doctor.findOneAndUpdate(
+        { docID: patientUser._id },
         {
-          $set: {
-            role:'doctor',
-          }
+          name: doctorRequest.dname || patientUser.name,
+          specialization: doctorRequest.specialization,
+          about: doctorRequest.description,
+          slmcNumber: doctorRequest.slmc,
+          clinic: doctorRequest.ex || 'A',
+          email: doctorRequest.email,
+          docID: patientUser._id
         },
-        { new: true } 
+        { upsert: true, new: true }
       );
 
-      const deletedUser = await docd.findByIdAndDelete(readquery);
-      
-      res.redirect('/');
-     
+      await docd.findByIdAndDelete(requestId);
+      req.flash('success', `Approved doctor application for ${doctorRequest.dname}!`);
     } else {
-      const deletedUser = await docd.findByIdAndDelete(readquery);
-      res.status(404).send('user not found');
-      
+      await docd.findByIdAndDelete(requestId);
+      req.flash('error', 'Associated patient account was not found');
     }
+
+    res.redirect('/adminPanel');
   } catch (error) {
-    
-    console.error(error);
-    res.status(500).send('Internal Server Error');
+    console.error("Doctor accept error:", error);
+    req.flash('error', 'Error approving doctor request');
+    res.redirect('/adminPanel');
   }
 });
-  
+
 Adrouter.delete("/deleteRequest/:id", async (req, res) => {
   try {
-    const userId = req.params.id;
-
-    const deletedUser = await docd.findByIdAndDelete(userId);
-
-      if (deletedUser) {   
-        res.redirect('/');
-
-      } else {
-        res.status(404).send({ status: "User not found" });
-      }
-
-
+    const requestId = req.params.id;
+    await docd.findByIdAndDelete(requestId);
+    req.flash('success', 'Doctor registration request declined and removed');
+    res.redirect('/adminPanel');
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ status: "Error deleting user", error: error.message });
+    console.error("Delete request error:", error);
+    req.flash('error', 'Error declining doctor request');
+    res.redirect('/adminPanel');
   }
 });
 
@@ -108,7 +110,7 @@ Adrouter.get('/addtesttable', async (req, res) => {
     }
 
     // Find empmodel data related to the patientId
-    const empData = await AdminTest.find().populate();
+    const empData = await AdminTest.find({});
 
     
     // Render your view or send the retrieved data to the client

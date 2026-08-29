@@ -1,290 +1,279 @@
 <!DOCTYPE html>
-<html data-bs-theme="light" lang="en">
-
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Dashboard - Brand</title>
-    <link rel="stylesheet" href="../assets_DB/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
-    <link rel="stylesheet" href="../assets_DB/fonts/fontawesome-all.min.css">
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/jquery.dataTables.min.js"></script>
-    <script src="../js/dataTables.bootstrap4.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - User & Operations Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .admin-sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: #0f172a;
+      color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      padding: 24px 16px;
+    }
+    .admin-main {
+      margin-left: 260px;
+      padding: 30px;
+      background-color: #f8fafc;
+      min-height: 100vh;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #94a3b8;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+    }
+    .sidebar-link:hover, .sidebar-link.active {
+      color: #ffffff;
+      background-color: #1e293b;
+    }
+    .stat-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+  </style>
 </head>
+<body>
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar d-flex flex-column">
+      <div class="px-2 mb-4">
+        <a class="brand-title text-white" href="/adminPanel">
+          <i class="bi bi-shield-check fs-4 text-info"></i> MEDICARE
+        </a>
+        <div class="badge bg-danger mt-1">Admin Panel</div>
+      </div>
 
+      <nav class="flex-grow-1">
+        <a href="/adminPanel" class="sidebar-link active"><i class="bi bi-people-fill"></i> User Directory</a>
+        <a href="#doctorRequestsSection" class="sidebar-link"><i class="bi bi-person-check-fill"></i> Doctor Requests</a>
+        <a href="/addTest" class="sidebar-link"><i class="bi bi-file-earmark-medical"></i> Add Lab Test</a>
+        <a href="/addtesttable" class="sidebar-link"><i class="bi bi-folder-check"></i> Manage Lab Tests</a>
+      </nav>
 
+      <div class="border-top border-secondary pt-3">
+        <a href="/logout" class="sidebar-link text-danger"><i class="bi bi-box-arrow-right"></i> Logout Admin</a>
+      </div>
+    </aside>
 
-<body id="page-top">
-  <% if (empData.length > 0) { %>
-    <div id="wrapper">
-        <nav class="navbar align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0 navbar-dark ">
-            <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
-                    <div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-clinic-medical"></i></div>
-        
-                    <div class="sidebar-brand-text mx-3"><span>MEDICARE</span></div>
-                </a>
-                <hr class="sidebar-divider my-0 fixed-top">
-                <ul class="navbar-nav text-light" id="accordionSidebar">
-                    <li class="nav-item"><a class="nav-link active" href="/"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href='/AdminDoc'><i class="fas fa-user"></i><span>Doctor</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href='/addtesttable'><i class="fas fa-table"></i><span>Added Tests</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href='/login'><i class="far fa-user-circle"></i><span>logout</span></a></li>
-                    
-                </ul>
-                <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
-            </div>
-        </nav>
-        <div class="d-flex flex-column" id="content-wrapper">
-            <div id="content">
-                <nav class="navbar navbar-expand bg-white shadow mb-4 topbar static-top navbar-light">
-                    <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
-                       
-                        <ul class="navbar-nav flex-nowrap ms-auto">
-                            <li class="nav-item dropdown d-sm-none no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><i class="fas fa-search"></i></a>
-                                <div class="dropdown-menu dropdown-menu-end p-3 animated--grow-in" aria-labelledby="searchDropdown">
-                                    <form class="me-auto navbar-search w-100">
-                                        <div class="input-group"><input class="bg-light form-control border-0 small" type="text" placeholder="Search for ...">
-                                            <div class="input-group-append"><button class="btn btn-primary py-0" type="button"><i class="fas fa-search"></i></button></div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </li>
-                            <li class="nav-item dropdown no-arrow mx-1">
-                               
-                                    <div class="dropdown-menu dropdown-menu-end dropdown-list animated--grow-in">
-                                        <h6 class="dropdown-header">alerts center</h6><a class="dropdown-item d-flex align-items-center" href="#">
-                                            <div class="me-3">
-                                                <div class="bg-primary icon-circle"><i class="fas fa-file-alt text-white"></i></div>
-                                            
-                                      
-                                        </a><a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="nav-item dropdown no-arrow mx-1">
-                               
-                                    <div class="dropdown-menu dropdown-menu-end dropdown-list animated--grow-in">
-                                        <h6 class="dropdown-header">alerts center</h6><a class="dropdown-item d-flex align-items-center" href="#">
-                                            <div class="dropdown-list-image me-3"><img class="rounded-circle" src="../assets_DB/img/avatars/avatar4.jpeg">
-                                                <div class="bg-success status-indicator"></div>
-                                            
-                                            
-                                        
-                                         
-                                           
-                                        </a><a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-                                    </div>
-                                </div>
-                                <div class="shadow dropdown-list dropdown-menu dropdown-menu-end" aria-labelledby="alertsDropdown"></div>
-                            </li>
-                            <div class="d-none d-sm-block topbar-divider"></div>
-                            <li class="nav-item dropdown no-arrow">
-                                
-                                    
-                </nav>
-                <div class="container-fluid">
-                    <div class="d-sm-flex justify-content-between align-items-center mb-4">
-                        <h3 class="text-dark mb-0">Dashboard</h3><a id="generateReportBtn" class="btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="#"><i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-success py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-success fw-bold text-xs mb-1"><span>total Users</span></div>
-                                            <div class="text-dark fw-bold h5 mb-0"><span><%= roleCounts.patient +  roleCounts.doctor + roleCounts.admin %></span></div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-user-tie fa-2x text-gray-300"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-success py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-success fw-bold text-xs mb-1"><span>total records</span></div>
-                                            <div class="text-dark fw-bold h5 mb-0"><span><%= count %></span></div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-clipboard-list fa-2x text-gray-300"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-info py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-info fw-bold text-xs mb-1"><span>registered doctors</span></div>
-                                            <div class="row g-0 align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="text-dark fw-bold h5 mb-0 me-3"><span><%= roleCounts.doctor %></span></div>
-                                                </div>
-                                                <div class="col">
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-user-tie fa-2x text-gray-300"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4"></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-7 col-xl-8">
-                            <div class="card shadow mb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="text-primary fw-bold m-0">Users overview</h6>
-                                    <div class="dropdown no-arrow"><button class="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button"><i class="fas fa-ellipsis-v text-gray-400"></i></button>
-                                        <div class="dropdown-menu shadow dropdown-menu-end animated--fade-in">
-                                            <p class="text-center dropdown-header">dropdown header:</p><a class="dropdown-item" href="#">&nbsp;Action</a><a class="dropdown-item" href="#">&nbsp;Another action</a>
-                                            <div class="dropdown-divider"></div><a class="dropdown-item" href="#">&nbsp;Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
+    <!-- Main Content -->
+    <main class="admin-main flex-grow-1">
+      <!-- Top Bar -->
+      <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+          <h2 class="fw-bold mb-1">System Administration</h2>
+          <p class="text-muted mb-0">Manage registered patients, consultant doctors, and pending doctor approval requests</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <a href="/logout" class="btn btn-outline-danger btn-sm px-3">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </a>
+        </div>
+      </div>
 
-                               
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="monthlyChart" data-bss-chart='{"type":"bar","data":{"labels":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"datasets":[{"label":"User Registrations","data":[<%= countsByMonth.January || 0 %>,<%= countsByMonth.February || 0 %>,<%= countsByMonth.March || 0 %>,<%= countsByMonth.April || 0 %>,<%= countsByMonth.May || 0 %>,<%= countsByMonth.June || 0 %>,<%= countsByMonth.July || 0 %>,<%= countsByMonth.August || 0 %>,<%= countsByMonth.September || 0 %>,<%= countsByMonth.October || 0 %>,<%= countsByMonth.November || 0 %>,<%= countsByMonth.December || 0 %>],"backgroundColor":"rgba(78, 115, 223, 0.9)","borderColor":"rgba(78, 115, 223, 1)","borderWidth":1}]}}',"options":{"maintainAspectRatio":false,"legend":{"display":false,"labels":{"fontStyle":"normal"}},"title":{"fontStyle":"normal"},"scales":{"xAxes":[{"gridLines":{"color":"rgb(234, 236, 244)","zeroLineColor":"rgb(234, 236, 244)","drawBorder":false,"drawTicks":false,"borderDash":["2"],"zeroLineBorderDash":["2"],"drawOnChartArea":false},"ticks":{"fontColor":"#858796","fontStyle":"normal","padding":20}}],"yAxes":[{"ticks":{"stepSize":1,"beginAtZero":true}}]}}}'>
-                                        </canvas>
-                                    </div>
-                                    
-                                    
-                                </div>
-                                
-                            </div>
-                        </div>
-                        <div class="col-lg-5 col-xl-4">
-                            <div class="card shadow mb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="text-primary fw-bold m-0">All the Users</h6>
-                                    <div class="dropdown no-arrow"><button class="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button"><i class="fas fa-ellipsis-v text-gray-400"></i></button>
-                                        <div class="dropdown-menu shadow dropdown-menu-end animated--fade-in">
-                                            <p class="text-center dropdown-header">dropdown header:</p><a class="dropdown-item" href="#">&nbsp;Action</a><a class="dropdown-item" href="#">&nbsp;Another action</a>
-                                            <div class="dropdown-divider"></div><a class="dropdown-item" href="#">&nbsp;Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;doughnut&quot;,&quot;data&quot;:{&quot;labels&quot;:[&quot;Patients&quot;,&quot;Doctors&quot;,&quot;Admins&quot;],&quot;datasets&quot;:[{&quot;label&quot;:&quot;&quot;,&quot;backgroundColor&quot;:[&quot;#4e73df&quot;,&quot;#1cc88a&quot;,&quot;#36b9cc&quot;],&quot;borderColor&quot;:[&quot;#ffffff&quot;,&quot;#ffffff&quot;,&quot;#ffffff&quot;],&quot;data&quot;:[&quot;<%= roleCounts.patient%>&quot;,&quot;<%= roleCounts.doctor%>&quot;,&quot;<%= roleCounts.admin %>&quot;]}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false,&quot;labels&quot;:{&quot;fontStyle&quot;:&quot;normal&quot;}},&quot;title&quot;:{&quot;fontStyle&quot;:&quot;normal&quot;}}}"></canvas></div>
-                                    <div class="text-center small mt-4"><span class="me-2"><i class="fas fa-circle text-primary"></i>Patients</span><span class="me-2"><i class="fas fa-circle text-success"></i>Doctors</span><span class="me-2"><i class="fas fa-circle text-info"></i>Admins</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="row">
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card text-white bg-primary shadow">
-                                        <div class="card-body">
-                                            <p class="m-0">Patients</p>
-                                            <p class="text-white-50 small m-0"><%= roleCounts.patient %></p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card text-white bg-success shadow">
-                                        <div class="card-body">
-                                            <p class="m-0">Doctors</p>
-                                            <p class="text-white-50 small m-0"><%= roleCounts.doctor %></p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card text-white bg-danger shadow"></div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card text-white bg-secondary shadow"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Users</h3>
-                    <div class="card shadow">
-                        <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">Users Info</p>
-                        </div>
-                        
-                            </div>
-                            <div class="table-responsive table mt-2" id="dataTable-1" role="grid" aria-describedby="dataTable_info">
-                                <table class="table my-0" id="dataTable">
-                                    <thead>
-                                        <tr>
-                                          <th>User Name</th>
-                                          <th>Email</th>
-                                          <th>Role</th>
-                                          <th>Description</th>
-                                          <th>Operations</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                      <% empData.forEach(data => { %>
-                                        <tr role="row" class="even">
-                                          <td><%= data.name %></td>
-                                          <td><%= data.email %></td>
-                                          <td><%= data.role %></td>
-                                          <td><%= data.description %></td>
-                                          
-
-                                          <td>
-                                            <div class="btn-group" role="group" aria-label="Operations">
-                                              <a class="btn btn-primary" href="/adminedit/<%= data._id %>">Edit</a>
-                              
-                                              <form style="display: inline;" action="/del/<%= data._id %>?_method=DELETE" method="POST">
-                                                <button style="cursor: pointer;" type="submit" class="btn btn-danger ml-2">Delete</button>
-                                              </form>
-                                            </div>
-                                          </td>
-                                       
-                                          </tr>
-                                          <% }); %>
-                                    </tbody>
-                                  
-                                </table>
-                            </div>
-                           
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <footer class="bg-white sticky-footer">
-                <div class="container my-auto">
-                    <div class="text-center my-auto copyright"><span>Copyright © Medicare</span></div>
-                </div>
-            </footer>
-        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
-    </div>
-    <% } else { %>
-      <p>No data found for this patient.</p>
+      <% if (typeof sucess !== 'undefined' && sucess && sucess.length > 0) { %>
+        <div class="alert alert-success alert-dismissible fade show">
+          <i class="bi bi-check-circle me-2"></i> <%= sucess %>
+        </div>
       <% } %>
-    <script src="../assets_DB/bootstrap/js/bootstrap.min.js"></script>
-    <script src="../assets_DB/js/chart.min.js"></script>
-    <script src="../assets_DB/js/bs-init.js"></script>
-    <script src="../assets_DB/js/theme.js"></script>
-    <script src="js/employee.js"></script>
 
-    <script>
-        // Get the "Generate Report" button element
-        const generateReportBtn = document.getElementById('generateReportBtn');
-      
-        // Add a click event listener to the button
-        generateReportBtn.addEventListener('click', function() {
-          // Print the current page
-          window.print();
-        });
-      </script>
+      <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show">
+          <i class="bi bi-exclamation-circle me-2"></i> <%= error %>
+        </div>
+      <% } %>
 
+      <!-- Analytics Stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-bold">TOTAL USERS</div>
+              <div class="fs-3 fw-bold mt-1 text-dark"><%= roleCounts.patient + roleCounts.doctor + roleCounts.admin %></div>
+            </div>
+            <div class="p-3 bg-primary-light text-primary rounded-3">
+              <i class="bi bi-people fs-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-bold">PATIENTS</div>
+              <div class="fs-3 fw-bold mt-1 text-success"><%= roleCounts.patient %></div>
+            </div>
+            <div class="p-3 bg-success bg-opacity-10 text-success rounded-3">
+              <i class="bi bi-person fs-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-bold">DOCTORS</div>
+              <div class="fs-3 fw-bold mt-1 text-info"><%= roleCounts.doctor %></div>
+            </div>
+            <div class="p-3 bg-info bg-opacity-10 text-info rounded-3">
+              <i class="bi bi-heart-pulse fs-4"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+              <div class="text-muted small fw-bold">PENDING REQUESTS</div>
+              <div class="fs-3 fw-bold mt-1 text-warning"><%= typeof doctorRequests !== 'undefined' ? doctorRequests.length : 0 %></div>
+            </div>
+            <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3">
+              <i class="bi bi-clock-history fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Doctor Verification Requests -->
+      <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-5" id="doctorRequestsSection">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-person-check-fill me-2 text-warning"></i> Pending Doctor Approval Applications
+          </h5>
+          <span class="badge bg-warning text-dark"><%= typeof doctorRequests !== 'undefined' ? doctorRequests.length : 0 %> Requests</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table medicare-table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Applicant Name</th>
+                <th>Registered Email</th>
+                <th>Specialization</th>
+                <th>SLMC Reg No</th>
+                <th>Clinic Assigned</th>
+                <th>Experience / Notes</th>
+                <th class="text-end">Verification Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (typeof doctorRequests !== 'undefined' && doctorRequests.length > 0) { %>
+                <% doctorRequests.forEach(req => { %>
+                  <tr>
+                    <td class="fw-bold text-dark">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="bg-light rounded-circle p-2 text-primary"><i class="bi bi-person-badge"></i></div>
+                        <%= req.dname %>
+                      </div>
+                    </td>
+                    <td class="text-muted"><%= req.email %></td>
+                    <td><span class="badge bg-primary-light text-primary"><%= req.specialization %></span></td>
+                    <td class="fw-bold"><%= req.slmc %></td>
+                    <td><span class="badge bg-light text-secondary border">Clinic <%= req.ex || 'A' %></span></td>
+                    <td class="text-muted small"><%= req.description || 'No bio provided' %></td>
+                    <td class="text-end">
+                      <div class="d-inline-flex gap-2">
+                        <a href="/Accept/<%= req._id %>" class="btn btn-sm btn-success px-3" onclick="return confirm('Approve doctor account for <%= req.dname %>?')">
+                          <i class="bi bi-check-lg me-1"></i> Approve
+                        </a>
+                        <form action="/deleteRequest/<%= req._id %>?_method=DELETE" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-sm btn-outline-danger px-2" onclick="return confirm('Decline this application?')">
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+                    All doctor registration requests have been reviewed and approved.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Table Card -->
+      <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-person-lines-fill me-2 text-primary"></i> Registered Users Directory</h5>
+          <span class="badge bg-secondary"><%= empData.length %> Total Users</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table medicare-table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Email Address</th>
+                <th>System Role</th>
+                <th>Registration Month</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% empData.forEach(data => { %>
+                <tr>
+                  <td class="fw-bold text-dark">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="bg-light rounded-circle p-2 text-primary">
+                        <i class="bi bi-person-fill"></i>
+                      </div>
+                      <%= data.name %>
+                    </div>
+                  </td>
+                  <td class="text-muted"><%= data.email %></td>
+                  <td>
+                    <% if (data.role === 'admin') { %>
+                      <span class="badge badge-role badge-role-admin">Admin</span>
+                    <% } else if (data.role === 'doctor') { %>
+                      <span class="badge badge-role badge-role-doctor">Doctor</span>
+                    <% } else { %>
+                      <span class="badge badge-role badge-role-patient">Patient</span>
+                    <% } %>
+                  </td>
+                  <td class="text-muted"><%= data.month || 'N/A' %></td>
+                  <td class="text-end">
+                    <div class="d-inline-flex gap-2">
+                      <a href="/adminedit/<%= data._id %>" class="btn btn-sm btn-outline-primary px-3">
+                        <i class="bi bi-pencil me-1"></i> Edit Role
+                      </a>
+                      <form action="/del/<%= data._id %>?_method=DELETE" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger px-2" onclick="return confirm('Are you sure you want to delete <%= data.name %>?')">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

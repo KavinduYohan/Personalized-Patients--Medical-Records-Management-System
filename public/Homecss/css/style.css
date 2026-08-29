@@ -1746,3 +1746,42 @@ a.btn.btn-readmore:hover{
 .donate-img img{
 	width: 100%;
 }
+
+/* Example CSS for Clinic Items */
+.clinic-item {
+	padding: 20px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #f9f9f9;
+	transition: background-color 0.3s ease;
+}
+
+.clinic-item:hover {
+	background-color: #e0e0e0;
+}
+
+.clinic-item h4 {
+	margin-top: 10px;
+	font-size: 18px;
+}
+
+.clinic-item p {
+	font-size: 14px;
+	color: #666;
+}
+
+/* Additional CSS for Clinic Item Links */
+.clinic-item-link {
+	text-decoration: none;
+	color: #333;
+	transition: color 0.3s ease;
+}
+
+.clinic-item-link:hover {
+	color: #007bff;
+}
+.clinic-image {
+	width: 300px;  /* Adjust width as needed */
+	height: 300px; /* Adjust height as needed */
+	object-fit: cover; /* Ensures the image covers the area without distortion */
+}

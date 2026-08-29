@@ -1,76 +1,98 @@
-const express = require('express');
-const app = express();
-
-const methodoverride = require('method-override');
-const dotenv = require('dotenv');
-const mongoose = require('mongoose');
-const path = require('path');  // Add path module for resolving paths
+let express = require('express');
+let app = express();
 
 
-const myrouter = require('./routers/router');
-const bodyParser = require('body-parser');
-const session = require('express-session');
-const flash = require('connect-flash');
-const MongoStore = require('connect-mongo'); // For MongoDB session store
+let methodoverwride = require('method-override')
+let dotenv= require('dotenv')
 
-// Load environment variables
-dotenv.config({ path: './config.env' });
+let mongoose  = require('mongoose');
+let myrouter= require('./routers/router')
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log('MongoDB connection error: ', err));
-
-// Set view engine to EJS
-app.set('view engine', 'ejs');
-
-// Middleware setup
-app.use(methodoverride('_method'));
+let bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(bodyParser.json());
 
 
-// Session middleware setup
+
+let session = require('express-session');
+let flash = require('connect-flash')
+
+dotenv.config({path: './config.env'})
+mongoose.connect(process.env.mongodburl)
+  .then(() => console.log("Connected to MongoDB successfully"))
+  .catch((err) => console.error("MongoDB connection error:", err.message));
+app.set('view engine', 'ejs')
+
+
+app.use(methodoverwride('_method'))
+app.use(bodyParser.urlencoded({extended:true}))
+app.use(express.static('public'))
+
+
+// session middleweare
 app.use(session({
-    secret: 'nodejs', 
-    resave: false, 
-    saveUninitialized: false, 
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URL,  // Use the MongoDB URL from .env
-        ttl: 14 * 24 * 60 * 60 // Session expiration time (14 days)
-    })
-}));
+   secret: 'nodejs',
+   resave:true,
+   saveUninitialized:true
+}))
+//flash middleweare
+app.use(flash())
 
-// Flash middleware
-app.use(flash());
 
-// Global variables for success and error messages
-app.use((req, res, next) => {
-    res.locals.sucess = req.flash('sucess');
-    res.locals.err = req.flash('err');
-    next();
+
+const patientRouter = require("./routers/patientRouter.js")
+// app.use("/patient",patientRouter);
+
+// const profileRouter = require("./routers/#profileRouter.js");
+const Adrouter = require('./routers/AdminRouter.js');
+// app.use("/patientrecord",patientRecordRouter);
+const doctorRouter = require("./routers/doctorRouter.js");
+const Vrouter = require('./routers/Voter.js');
+const emprouter = require('./routers/router');
+
+
+
+// app.use('/reservations', reservationRouter);
+
+// let docd=require('./routers/#docd.js')
+
+// Global variables and auth state in all EJS templates
+app.use(async (req, res, next) => {
+  res.locals.sucess = req.flash('sucess') || req.flash('success');
+  res.locals.err = req.flash('err') || req.flash('error');
+  res.locals.currentUserId = req.session.userId || null;
+  res.locals.userRole = req.session.userRole || null;
+  res.locals.userName = req.session.userName || null;
+
+  if (req.session.userId && !req.session.userRole) {
+    try {
+      const user = await mongoose.model('patientRegister').findById(req.session.userId);
+      if (user) {
+        req.session.userRole = user.role;
+        req.session.userName = user.name;
+        res.locals.userRole = user.role;
+        res.locals.userName = user.name;
+      }
+    } catch (e) {
+      console.error("Session user lookup error:", e.message);
+    }
+  }
+  next();
 });
 
-// Define routes for different modules
-const patientRouter = require("./routers/patientRouter.js");
-const profileRouter = require("./routers/profileRouter.js");
-const Adrouter = require('./routers/AdminRouter.js');
-const doctorRouter = require("./routers/doctorRouter.js");
-let docd = require('./routers/docd.js');
-
-// Static files setup for uploads
 app.use('/upload', express.static('upload'));
 
-// Use routers for different routes
-app.use(doctorRouter);
-app.use(Adrouter);
-app.use(myrouter);
-app.use(patientRouter);
-app.use(profileRouter);
-app.use(docd);
+// Mount modular routers cleanly
+app.use('/', myrouter);
+app.use('/', patientRouter);
+app.use('/', doctorRouter);
+app.use('/', Adrouter);
+app.use('/', Vrouter);
 
-// Start the server
-const port = process.env.PORT || 3000; // Ensure fallback for local development
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
+
+// // app.use(profileRouter)
+// app.use(docd)
+
+app.listen(process.env.PORT, ()=>{
+    console.log(process.env.PORT, "Port Working");
+} )

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Doctors - Medicare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg medicare-navbar sticky-top">
+    <div class="container">
+      <a class="brand-title" href="/">
+        <i class="bi bi-hospital fs-3 text-primary"></i> MEDICARE
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navContent">
+        <ul class="navbar-nav ms-auto align-items-center gap-2">
+          <li class="nav-item"><a class="nav-link nav-link-custom" href="/"><i class="bi bi-house-door me-1"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-custom" href="/clinic"><i class="bi bi-building me-1"></i> Clinics</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-custom active text-primary" href="/Alldoctors"><i class="bi bi-person-badge me-1"></i> Doctors</a></li>
+          <% if (typeof currentUserId !== 'undefined' && currentUserId) { %>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="/patientres"><i class="bi bi-calendar2-check me-1"></i> My Appointments</a></li>
+            <li class="nav-item"><a class="nav-link nav-link-custom" href="/profile"><i class="bi bi-person-circle me-1"></i> Profile</a></li>
+            <li class="nav-item ms-lg-2"><a class="btn btn-outline-danger btn-sm px-3" href="/logout"><i class="bi bi-box-arrow-right me-1"></i> Logout</a></li>
+          <% } else { %>
+            <li class="nav-item ms-lg-2"><a class="btn btn-primary btn-sm px-4" href="/login"><i class="bi bi-person-fill me-1"></i> Login</a></li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="bg-white border-bottom py-5">
+    <div class="container text-center">
+      <h1 class="fw-bold mb-2">Our Panel of Consultant Doctors</h1>
+      <p class="text-muted mx-auto" style="max-width: 650px;">
+        Browse experienced healthcare specialists across multiple medical fields and book appointments.
+      </p>
+    </div>
+  </div>
+
+  <div class="container py-5">
+    <% if (doctors && doctors.length > 0) { %>
+      <div class="row g-4">
+        <% doctors.forEach(doctor => { %>
+          <div class="col-md-6 col-lg-4">
+            <div class="medicare-card h-100 p-4 d-flex flex-column">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <img src="<%= doctor.image || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80' %>"
+                     class="rounded-circle object-fit-cover shadow-sm"
+                     alt="<%= doctor.name %>"
+                     style="width: 70px; height: 70px; border: 2px solid var(--primary-light);">
+                <div>
+                  <h5 class="fw-bold mb-1 text-dark"><%= doctor.name %></h5>
+                  <span class="badge bg-primary-light text-primary"><%= doctor.specialization %></span>
+                </div>
+              </div>
+
+              <div class="mb-3 small text-muted">
+                <div><i class="bi bi-building me-1 text-primary"></i> <strong>Clinic:</strong> Clinic <%= doctor.clinic %></div>
+                <div><i class="bi bi-award me-1 text-primary"></i> <strong>SLMC Reg:</strong> <%= doctor.slmcNumber %></div>
+              </div>
+
+              <p class="text-muted small flex-grow-1"><%= doctor.about || 'Specialist healthcare practitioner available for appointment bookings.' %></p>
+
+              <button class="btn btn-primary btn-sm w-100 py-2 mt-3" data-bs-toggle="modal" data-bs-target="#reservationModal<%= doctor._id %>">
+                <i class="bi bi-calendar-plus me-1"></i> Make Reservation
+              </button>
+            </div>
+          </div>
+
+          <!-- Reservation Modal -->
+          <div class="modal fade" id="reservationModal<%= doctor._id %>" tabindex="-1" aria-labelledby="modalLabel<%= doctor._id %>" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-light border-bottom">
+                  <h5 class="modal-title fw-bold" id="modalLabel<%= doctor._id %>">
+                    <i class="bi bi-calendar-check text-primary me-2"></i> Book Appointment with <%= doctor.name %>
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/reservationForm" method="POST">
+                  <div class="modal-body p-4">
+                    <input type="hidden" name="docID" value="<%= doctor._id %>">
+                    <input type="hidden" name="patientId" value="<%= typeof currentUserId !== 'undefined' ? currentUserId : '' %>">
+
+                    <div class="mb-3">
+                      <label class="form-label" for="date<%= doctor._id %>">Preferred Date</label>
+                      <input type="date" class="form-control" id="date<%= doctor._id %>" name="date" required min="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label" for="timeSlot<%= doctor._id %>">Preferred Time Slot</label>
+                      <select class="form-select" id="timeSlot<%= doctor._id %>" name="timeSlot" required>
+                        <option value="morning">Morning (9:00 AM - 12:00 PM)</option>
+                        <option value="afternoon">Afternoon (1:00 PM - 4:00 PM)</option>
+                        <option value="evening">Evening (5:00 PM - 8:00 PM)</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label" for="message<%= doctor._id %>">Reason / Symptoms (Optional)</label>
+                      <textarea class="form-control" id="message<%= doctor._id %>" name="message" rows="3" placeholder="Briefly describe your symptoms or visit reason..."></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer bg-light border-top">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i> Confirm Appointment</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-5">
+        <i class="bi bi-person-x fs-1 text-muted d-block mb-2"></i>
+        <h4>No Doctors Found</h4>
+        <p class="text-muted">No doctor profiles are currently available.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <footer class="bg-white border-top py-4 text-center text-muted small mt-5">
+    <div class="container">
+      &copy; <%= new Date().getFullYear() %> MEDICARE Centralized Healthcare Booking System.
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

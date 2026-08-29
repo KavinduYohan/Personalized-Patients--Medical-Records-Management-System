@@ -1,266 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/profile.css">
-  <title>Profile</title>
-  <style>
-    /* Styles for the user profile card */
-    .user-profile-card {
-      width: 70%;
-      margin: 20px auto;
-      background-color: #f5f5f5;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      padding: 20px;
-    }
-
-    .user-profile-header {
-      text-align: center;
-      padding-bottom: 10px;
-    }
-
-    .user-profile-header h2 {
-      color: #333;
-    }
-
-    .user-profile-details .row {
-      display: flex;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
-    }
-
-    .user-profile-details .col {
-      flex: 1;
-      margin-right: 10px;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #555;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="number"],
-    input[type="date"],
-    input[type="text"],
-    input[type="tel"],
-    select {
-      width: 100%;
-      padding: 8px 30px 8px 10px;
-      /* Added padding for icon */
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-    }
-
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="number"]:focus,
-    input[type="date"]:focus,
-    input[type="text"]:focus,
-    input[type="tel"]:focus,
-    select:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 5px #007bff;
-    }
-
-    /* Styling select dropdown arrow */
-    select {
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5"><polygon points="0,0 10,0 5,5" fill="#666"/></svg>');
-      background-repeat: no-repeat;
-      background-position: right 8px top 50%;
-      background-size: 10px auto;
-      padding-right: 30px;
-      /* Adjusted for larger icon */
-    }
-
-    /* Styling icons for input fields */
-    #age::before {
-      content: "\f1fd";
-      /* Unicode for user icon */
-      font-family: "Font Awesome 5 Free";
-      position: absolute;
-      left: 10px;
-      color: #999;
-      font-size: 16px;
-    }
-
-    #dob::before {
-      content: "\f073";
-      /* Unicode for calendar icon */
-      font-family: "Font Awesome 5 Free";
-      position: absolute;
-      left: 10px;
-      color: #999;
-      font-size: 16px;
-    }
-
-    #nic::before {
-      content: "\f2c2";
-      /* Unicode for id-card icon */
-      font-family: "Font Awesome 5 Free";
-      position: absolute;
-      left: 10px;
-      color: #999;
-      font-size: 16px;
-    }
-
-    /* Style for the profile picture input */
-    .profile-pic-label {
-      display: inline-block;
-      padding: 8px 12px;
-      border: 1px solid #007bff;
-      border-radius: 4px;
-      background-color: #007bff;
-      color: #fff;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .profile-pic-label:hover {
-      background-color: #0056b3;
-    }
-
-
-    /* Styles for the centered save button */
-    .save-button-container {
-      text-align: center;
-      margin-top: 20px;
-      /* Adjust margin-top as needed */
-    }
-
-    .save-button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .save-button:hover {
-      background-color: #0056b3;
-    }
-
-    /* Add other icon styles for different input fields as needed */
-  </style>
+  <title>Patient Profile - Medicare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
-
-  <form action='/profileEdit'method="POST" enctype="multipart/form-data">
-    <div class="user-profile-card">
-      <div class="user-profile-header">
-        <h2>User Profile</h2>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg medicare-navbar sticky-top">
+    <div class="container">
+      <a class="brand-title" href="/">
+        <i class="bi bi-hospital fs-3 text-primary"></i> MEDICARE
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navContent">
+        <ul class="navbar-nav ms-auto align-items-center gap-2">
+          <li class="nav-item"><a class="nav-link nav-link-custom" href="/"><i class="bi bi-house-door me-1"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-custom" href="/clinic"><i class="bi bi-building me-1"></i> Clinics</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-custom" href="/Alldoctors"><i class="bi bi-person-badge me-1"></i> Doctors</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-custom" href="/patientres"><i class="bi bi-calendar2-check me-1"></i> My Appointments</a></li>
+          <li class="nav-item"><a class="nav-link nav-link-custom active text-primary" href="/profile"><i class="bi bi-person-circle me-1"></i> Profile</a></li>
+          <li class="nav-item ms-lg-2"><a class="btn btn-outline-danger btn-sm px-3" href="/logout"><i class="bi bi-box-arrow-right me-1"></i> Logout</a></li>
+        </ul>
       </div>
-      <div class="user-profile-details">
-        <div class="row">
-          <div class="col">
-            <div class="col">
-              <label for="fullname">Full Name</label>
-              <input type="text" name="name" class="form-control" placeholder="Record Name" required>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 class="fw-bold mb-1">Personal Medical Profile</h2>
+            <p class="text-muted mb-0">Update your patient demographic and emergency medical information</p>
+          </div>
+        </div>
+
+        <% if (typeof sucess !== 'undefined' && sucess && sucess.length > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show mb-4">
+            <i class="bi bi-check-circle me-2"></i> <%= sucess %>
+          </div>
+        <% } %>
+
+        <% if (typeof err !== 'undefined' && err && err.length > 0) { %>
+          <div class="alert alert-danger alert-dismissible fade show mb-4">
+            <i class="bi bi-exclamation-circle me-2"></i> <%= err %>
+          </div>
+        <% } %>
+
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+          <form action="/profileEdit" method="POST">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="name">Full Legal Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="<%= profile && profile.fullName ? profile.fullName : (user ? user.name : '') %>" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="dob">Date of Birth</label>
+                <input type="date" class="form-control" id="dob" name="dob" value="<%= profile && profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : '' %>">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="nic">NIC / National Identity</label>
+                <input type="text" class="form-control" id="nic" name="nic" value="<%= profile && profile.nic ? profile.nic : '' %>" placeholder="e.g. 199512345678">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="civilStatus">Civil Status</label>
+                <select class="form-select" id="civilStatus" name="civilStatus">
+                  <option value="single" <%= profile && profile.civilStatus === 'single' ? 'selected' : '' %>>Single</option>
+                  <option value="married" <%= profile && profile.civilStatus === 'married' ? 'selected' : '' %>>Married</option>
+                  <option value="other" <%= profile && profile.civilStatus === 'other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="gender">Gender</label>
+                <select class="form-select" id="gender" name="gender">
+                  <option value="male" <%= profile && profile.gender === 'male' ? 'selected' : '' %>>Male</option>
+                  <option value="female" <%= profile && profile.gender === 'female' ? 'selected' : '' %>>Female</option>
+                  <option value="other" <%= profile && profile.gender === 'other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="bloodGroup">Blood Group</label>
+                <select class="form-select" id="bloodGroup" name="bloodGroup">
+                  <option value="A+" <%= profile && profile.bloodGroup === 'A+' ? 'selected' : '' %>>A+</option>
+                  <option value="A-" <%= profile && profile.bloodGroup === 'A-' ? 'selected' : '' %>>A-</option>
+                  <option value="B+" <%= profile && profile.bloodGroup === 'B+' ? 'selected' : '' %>>B+</option>
+                  <option value="B-" <%= profile && profile.bloodGroup === 'B-' ? 'selected' : '' %>>B-</option>
+                  <option value="AB+" <%= profile && profile.bloodGroup === 'AB+' ? 'selected' : '' %>>AB+</option>
+                  <option value="AB-" <%= profile && profile.bloodGroup === 'AB-' ? 'selected' : '' %>>AB-</option>
+                  <option value="O+" <%= profile && profile.bloodGroup === 'O+' ? 'selected' : '' %>>O+</option>
+                  <option value="O-" <%= profile && profile.bloodGroup === 'O-' ? 'selected' : '' %>>O-</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="mobileNo">Mobile Phone Number</label>
+                <input type="tel" class="form-control" id="mobileNo" name="mobileNo" value="<%= profile && profile.mobileNo ? profile.mobileNo : '' %>" placeholder="+94 77 123 4567">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="occupation">Occupation</label>
+                <input type="text" class="form-control" id="occupation" name="occupation" value="<%= profile && profile.occupation ? profile.occupation : '' %>" placeholder="e.g. Engineer, Teacher">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label" for="address">Residential Address</label>
+                <input type="text" class="form-control" id="address" name="address" value="<%= profile && profile.address ? profile.address : '' %>" placeholder="Street Address, City">
+              </div>
             </div>
-          </div>
 
-
-        </div>
-        <div class="row">
-          
-          <div class="col">
-            <label for="dob">Date of Birth</label>
-            <input type="date" id="dob" name="dob" required>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="nic">NIC (optional)</label>
-            <input type="text" id="nic" name="nic" placeholder="NIC">
-          </div>
-          <div class="col">
-            <label for="civilStatus">Civil Status</label>
-            <select id="civilStatus" name="civilStatus">
-              <option value="single">single</option>
-              <option value="married">married</option>
-
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="gender">Gender</label>
-            <select id="gender" name="gender">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-          <div class="col">
-            <label for="religion">Religion</label>
-            <input type="text" id="religion" name="religion" placeholder="Religion">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="occupation">Occupation</label>
-            <input type="text" id="occupation" name="occupation" placeholder="Occupation">
-          </div>
-          <div class="col">
-            <label for="address">Address</label>
-            <input type="text" id="address" name="address" placeholder="Address">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="mobileNo">Mobile No</label>
-            <input type="tel" id="mobileNo" name="mobileNo" placeholder="Mobile No">
-          </div>
-          <div class="col">
-            <label for="birthPlace">Birth Place</label>
-            <input type="text" id="birthPlace" name="birthPlace" placeholder="Birth Place">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label for="bloodGroup">Blood Group</label>
-            <select id="bloodGroup" name="bloodGroup">
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB-</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          </div>
-        </div>
-        <input type="file" name="profilePic" class="form-control" accept="image/*">
-      </div>
-      <div class="row">
-        <div class="col">
-
-          
+            <div class="mt-4 pt-3 text-end">
+              <button type="submit" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-save me-1"></i> Save Profile Details
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="save-button-container">
-      <button type="submit" class="save-button">Save</button>
+  <footer class="bg-white border-top py-4 text-center text-muted small mt-5">
+    <div class="container">
+      &copy; <%= new Date().getFullYear() %> MEDICARE Centralized Healthcare Booking System.
     </div>
+  </footer>
 
-  </form>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

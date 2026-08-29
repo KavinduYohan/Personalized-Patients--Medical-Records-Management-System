@@ -10,6 +10,8 @@
 </head>
 <body>
   <!-- Header / Navigation -->
+  <%- include('common/toasts') %>
+  <%- include('common/confirmModal') %>
   <nav class="navbar navbar-expand-lg medicare-navbar sticky-top">
     <div class="container">
       <a class="brand-title" href="/doctor">
@@ -77,12 +79,20 @@
                   <td class="text-end">
                     <div class="d-inline-flex gap-2">
                       <form action="/status/<%= resv._id %>/accept" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-success px-3" <%= resv.status === 'accepted' ? 'disabled' : '' %>>
+                        <button type="submit" class="btn btn-sm btn-success px-3" <%= resv.status === 'accepted' ? 'disabled' : '' %>
+                                data-confirm="Are you sure you want to accept this patient appointment?"
+                                data-confirm-title="Accept Appointment"
+                                data-confirm-type="accept"
+                                data-confirm-btn="Accept Appointment">
                           <i class="bi bi-check-lg me-1"></i> Accept
                         </button>
                       </form>
                       <form action="/status/<%= resv._id %>/reject" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger px-2" <%= resv.status === 'rejected' ? 'disabled' : '' %>>
+                        <button type="submit" class="btn btn-sm btn-outline-danger px-2" <%= resv.status === 'rejected' ? 'disabled' : '' %>
+                                data-confirm="Are you sure you want to reject this appointment booking?"
+                                data-confirm-title="Reject Appointment"
+                                data-confirm-type="reject"
+                                data-confirm-btn="Reject">
                           <i class="bi bi-x-lg"></i>
                         </button>
                       </form>

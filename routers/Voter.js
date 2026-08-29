@@ -188,13 +188,17 @@ Vrouter.post('/status/:reservationId/accept', async (req, res) => {
     );
 
     if (!reservation) {
-      return res.status(404).json({ message: 'Reservation not found.' });
+      req.flash('error', 'Reservation not found.');
+    } else {
+      req.flash('success', 'Appointment accepted successfully!');
     }
 
-    res.status(200).json(reservation);
+    const backUrl = req.header('Referer') || '/status';
+    res.redirect(backUrl);
   } catch (err) {
     console.error('Error accepting reservation:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    req.flash('error', 'Internal Server Error accepting appointment.');
+    res.redirect('/status');
   }
 });
 
@@ -210,13 +214,17 @@ Vrouter.post('/status/:reservationId/reject', async (req, res) => {
     );
 
     if (!reservation) {
-      return res.status(404).json({ message: 'Reservation not found.' });
+      req.flash('error', 'Reservation not found.');
+    } else {
+      req.flash('error', 'Appointment has been rejected.');
     }
 
-    res.status(200).json(reservation);
+    const backUrl = req.header('Referer') || '/status';
+    res.redirect(backUrl);
   } catch (err) {
     console.error('Error rejecting reservation:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    req.flash('error', 'Internal Server Error rejecting appointment.');
+    res.redirect('/status');
   }
 });
 

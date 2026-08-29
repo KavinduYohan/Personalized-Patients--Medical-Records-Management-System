@@ -58,8 +58,21 @@ const emprouter = require('./routers/router');
 
 // Global variables and auth state in all EJS templates
 app.use(async (req, res, next) => {
-  res.locals.sucess = req.flash('sucess') || req.flash('success');
-  res.locals.err = req.flash('err') || req.flash('error');
+  const successFlash = req.flash('success');
+  const sucessFlash = req.flash('sucess');
+  const errorFlash = req.flash('error');
+  const errFlash = req.flash('err');
+
+  const finalSuccess = (successFlash && successFlash.length > 0 ? successFlash[0] : null) ||
+                       (sucessFlash && sucessFlash.length > 0 ? sucessFlash[0] : null);
+
+  const finalError = (errorFlash && errorFlash.length > 0 ? errorFlash[0] : null) ||
+                     (errFlash && errFlash.length > 0 ? errFlash[0] : null);
+
+  res.locals.sucess = finalSuccess;
+  res.locals.success = finalSuccess;
+  res.locals.error = finalError;
+  res.locals.err = finalError;
   res.locals.currentUserId = req.session.userId || null;
   res.locals.userRole = req.session.userRole || null;
   res.locals.userName = req.session.userName || null;

@@ -1,0 +1,118 @@
+<!-- Reusable Confirmation Dialog Modal -->
+<div class="modal fade" id="medicareConfirmModal" tabindex="-1" aria-labelledby="medicareConfirmModalTitle" aria-hidden="true" style="z-index: 100000;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div id="confirmModalIconContainer" class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+            <i id="confirmModalIcon" class="fs-4"></i>
+          </div>
+          <h5 class="modal-title fw-bold text-dark mb-0" id="medicareConfirmModalTitle">Confirm Action</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body px-4 py-3">
+        <p class="text-muted mb-0 fs-6" id="medicareConfirmModalMessage">Are you sure you want to proceed with this action?</p>
+      </div>
+
+      <div class="modal-footer border-0 px-4 pb-4 pt-2 d-flex gap-2">
+        <button type="button" class="btn btn-light px-4 py-2 fw-semibold text-secondary flex-grow-1" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+        <button type="button" class="btn px-4 py-2 fw-bold text-white flex-grow-1" id="medicareConfirmModalBtn" style="border-radius: 8px;">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    let pendingAction = null;
+
+    window.openConfirmModal = function(options) {
+      const {
+        title = 'Are you sure?',
+        message = 'Do you want to proceed with this action?',
+        actionType = 'delete', // 'delete', 'reject', 'accept', 'warning'
+        confirmBtnText = 'Confirm',
+        onConfirm = null
+      } = options;
+
+      pendingAction = onConfirm;
+
+      const modalTitle = document.getElementById('medicareConfirmModalTitle');
+      const modalMsg = document.getElementById('medicareConfirmModalMessage');
+      const confirmBtn = document.getElementById('medicareConfirmModalBtn');
+      const iconContainer = document.getElementById('confirmModalIconContainer');
+      const icon = document.getElementById('confirmModalIcon');
+
+      modalTitle.textContent = title;
+      modalMsg.textContent = message;
+      confirmBtn.textContent = confirmBtnText;
+
+      // Color themes for action type
+      if (actionType === 'delete' || actionType === 'reject') {
+        iconContainer.className = 'rounded-circle p-2 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger';
+        icon.className = 'bi bi-exclamation-triangle-fill fs-4 text-danger';
+        confirmBtn.className = 'btn btn-danger px-4 py-2 fw-bold text-white flex-grow-1';
+        confirmBtn.style.background = '#dc2626';
+      } else if (actionType === 'accept' || actionType === 'approve') {
+        iconContainer.className = 'rounded-circle p-2 d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success';
+        icon.className = 'bi bi-check-circle-fill fs-4 text-success';
+        confirmBtn.className = 'btn btn-success px-4 py-2 fw-bold text-white flex-grow-1';
+        confirmBtn.style.background = '#059669';
+      } else {
+        iconContainer.className = 'rounded-circle p-2 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary';
+        icon.className = 'bi bi-info-circle-fill fs-4 text-primary';
+        confirmBtn.className = 'btn btn-primary px-4 py-2 fw-bold text-white flex-grow-1';
+        confirmBtn.style.background = '#0284c7';
+      }
+
+      const modalEl = document.getElementById('medicareConfirmModal');
+      const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      bsModal.show();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const confirmBtn = document.getElementById('medicareConfirmModalBtn');
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+          const modalEl = document.getElementById('medicareConfirmModal');
+          const bsModal = bootstrap.Modal.getInstance(modalEl);
+          if (bsModal) bsModal.hide();
+
+          if (typeof pendingAction === 'function') {
+            pendingAction();
+          }
+        });
+      }
+
+      // Delegate click listeners for automatic confirmation trigger
+      document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('[data-confirm]');
+        if (trigger) {
+          e.preventDefault();
+          const message = trigger.getAttribute('data-confirm') || 'Are you sure you want to proceed?';
+          const title = trigger.getAttribute('data-confirm-title') || 'Please Confirm';
+          const type = trigger.getAttribute('data-confirm-type') || 'delete';
+          const btnText = trigger.getAttribute('data-confirm-btn') || 'Confirm';
+
+          window.openConfirmModal({
+            title: title,
+            message: message,
+            actionType: type,
+            confirmBtnText: btnText,
+            onConfirm: function() {
+              if (trigger.tagName.toLowerCase() === 'a') {
+                window.location.href = trigger.getAttribute('href');
+              } else if (trigger.form) {
+                trigger.form.submit();
+              } else if (trigger.closest('form')) {
+                trigger.closest('form').submit();
+              }
+            }
+          });
+        }
+      });
+    });
+  })();
+</script>

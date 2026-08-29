@@ -1,0 +1,51 @@
+<% 
+  const displaySuccess = (typeof success !== 'undefined' && success && success.length > 0) ? success : 
+                         ((typeof sucess !== 'undefined' && sucess && sucess.length > 0) ? sucess : null);
+  const displayError = (typeof error !== 'undefined' && error && error.length > 0) ? error : 
+                       ((typeof err !== 'undefined' && err && err.length > 0) ? err : null);
+%>
+
+<% if (displaySuccess || displayError) { %>
+  <!-- Toast Notification Overlay -->
+  <div class="toast-container position-fixed top-0 end-0 p-4" style="z-index: 999999;">
+    <% if (displaySuccess) { %>
+      <div id="medicareToastSuccess" class="toast show align-items-center text-white border-0 shadow-lg" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border-radius: 12px; min-width: 320px;" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex align-items-center p-3">
+          <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+            <i class="bi bi-check-lg fs-4 text-white"></i>
+          </div>
+          <div class="toast-body p-0 flex-grow-1 fs-6 fw-semibold text-white">
+            <%= Array.isArray(displaySuccess) ? displaySuccess[0] : displaySuccess %>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    <% } %>
+
+    <% if (displayError) { %>
+      <div id="medicareToastError" class="toast show align-items-center text-white border-0 shadow-lg" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 12px; min-width: 320px;" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex align-items-center p-3">
+          <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+            <i class="bi bi-exclamation-triangle fs-4 text-white"></i>
+          </div>
+          <div class="toast-body p-0 flex-grow-1 fs-6 fw-semibold text-white">
+            <%= Array.isArray(displayError) ? displayError[0] : displayError %>
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var toastElements = [].slice.call(document.querySelectorAll('.toast'));
+      toastElements.forEach(function(toastEl) {
+        if (window.bootstrap && bootstrap.Toast) {
+          var toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+          toast.show();
+        }
+      });
+    });
+  </script>
+<% } %>

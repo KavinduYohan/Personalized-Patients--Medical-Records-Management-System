@@ -5,34 +5,32 @@ let docd = require("../model/docd");
 let Doctor = require("../model/Doctors.js");
 
 Adrouter.get('/addTest', (req, res) => { 
-
+  if (!req.session.userId) {
+    req.flash('error', 'Please log in as an administrator');
+    return res.redirect('/login');
+  }
   res.render('addTest'); 
 });
-
 
 Adrouter.post('/addTest', async (req, res) => {
   try {
     const patientId = req.session.userId; 
 
-
     if (!patientId) {
-      // Handle case if patient is not logged in
-      req.flash('error', 'Please log in as a patient');
-      res.redirect('/login');
-      return;
+      req.flash('error', 'Please log in as an administrator');
+      return res.redirect('/login');
     }
    
     const data = {
       testname: req.body.pname,
-      
     };
    
     await AdminTest.create(data);
-    req.flash('success', 'Data has been created in the Database');
-    res.redirect('/');
+    req.flash('success', `Diagnostic test '${req.body.pname}' created successfully!`);
+    res.redirect('/addtesttable');
   } catch (error) {
-    req.flash('error', 'Data has not been created in the Database');
-    res.redirect('/');
+    req.flash('error', 'Failed to create diagnostic test');
+    res.redirect('/addtesttable');
   }
 });
 
@@ -87,7 +85,7 @@ Adrouter.delete("/deleteRequest/:id", async (req, res) => {
   try {
     const requestId = req.params.id;
     await docd.findByIdAndDelete(requestId);
-    req.flash('success', 'Doctor registration request declined and removed');
+    req.flash('error', 'Doctor registration request was declined and removed.');
     res.redirect('/adminPanel');
   } catch (error) {
     console.error("Delete request error:", error);
@@ -100,44 +98,37 @@ Adrouter.delete("/deleteRequest/:id", async (req, res) => {
 
 Adrouter.get('/addtesttable', async (req, res) => {
   try {
-    const patientId = req.session.userId; // Retrieve patient ID from the session
+    const patientId = req.session.userId;
 
     if (!patientId) {
-      // Handle case if patient is not logged in
-      req.flash('error', 'Please log in as a patient');
-      res.redirect('/login');
-      return;
+      req.flash('error', 'Please log in as an administrator');
+      return res.redirect('/login');
     }
 
-    // Find empmodel data related to the patientId
     const empData = await AdminTest.find({});
-
-    
-    // Render your view or send the retrieved data to the client
     res.render('addTestTable', { empData });
   } catch (error) {
-    req.flash('error', 'Error fetching data');
-    res.redirect('/'); // Redirect to the desired route or handle the error accordingly
+    console.error("Error fetching lab tests:", error);
+    req.flash('error', 'Error fetching lab tests data');
+    res.redirect('/adminPanel');
   }
 });
   
 Adrouter.delete("/deletetest/:id", async (req, res) => {
   try {
-    const userId = req.params.id;
+    const testId = req.params.id;
+    const deletedUser = await AdminTest.findByIdAndDelete(testId);
 
-    const deletedUser = await AdminTest.findByIdAndDelete(userId);
-
-      if (deletedUser) {   
-        res.redirect('/');
-
-      } else {
-        res.status(404).send({ status: "User not found" });
-      }
-
-
+    if (deletedUser) {
+      req.flash('error', `Deleted diagnostic test '${deletedUser.testname}'`);
+    } else {
+      req.flash('error', 'Test record not found');
+    }
+    res.redirect('/addtesttable');
   } catch (error) {
     console.error(error);
-    res.status(500).send({ status: "Error deleting user", error: error.message });
+    req.flash('error', 'Error deleting diagnostic test: ' + error.message);
+    res.redirect('/addtesttable');
   }
 });
 

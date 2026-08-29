@@ -51,6 +51,8 @@
   </style>
 </head>
 <body>
+  <%- include('common/toasts') %>
+  <%- include('common/confirmModal') %>
   <div class="d-flex">
     <!-- Sidebar -->
     <aside class="admin-sidebar d-flex flex-column">
@@ -189,11 +191,19 @@
                     <td class="text-muted small"><%= req.description || 'No bio provided' %></td>
                     <td class="text-end">
                       <div class="d-inline-flex gap-2">
-                        <a href="/Accept/<%= req._id %>" class="btn btn-sm btn-success px-3" onclick="return confirm('Approve doctor account for <%= req.dname %>?')">
+                        <a href="/Accept/<%= req._id %>" class="btn btn-sm btn-success px-3"
+                           data-confirm="Do you want to verify and grant Doctor status to <%= req.dname %>?"
+                           data-confirm-title="Approve Doctor Application"
+                           data-confirm-type="approve"
+                           data-confirm-btn="Approve Doctor">
                           <i class="bi bi-check-lg me-1"></i> Approve
                         </a>
                         <form action="/deleteRequest/<%= req._id %>?_method=DELETE" method="POST" class="d-inline">
-                          <button type="submit" class="btn btn-sm btn-outline-danger px-2" onclick="return confirm('Decline this application?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger px-2"
+                                  data-confirm="Are you sure you want to decline this doctor application?"
+                                  data-confirm-title="Decline Doctor Application"
+                                  data-confirm-type="reject"
+                                  data-confirm-btn="Decline">
                             <i class="bi bi-x-lg"></i>
                           </button>
                         </form>
@@ -259,7 +269,11 @@
                         <i class="bi bi-pencil me-1"></i> Edit Role
                       </a>
                       <form action="/del/<%= data._id %>?_method=DELETE" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger px-2" onclick="return confirm('Are you sure you want to delete <%= data.name %>?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger px-2"
+                                data-confirm="Are you sure you want to permanently delete user account '<%= data.name %> '?"
+                                data-confirm-title="Delete User Account"
+                                data-confirm-type="delete"
+                                data-confirm-btn="Delete User">
                           <i class="bi bi-trash"></i>
                         </button>
                       </form>

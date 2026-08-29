@@ -19,9 +19,15 @@ router1.get("/doctor", async (req, res) => {
 
     // Retrieve doctor profile
     const doctorProfile = await Doctor.findOne({ docID: userId });
+    const doctorProfileId = doctorProfile ? doctorProfile._id : null;
 
     // Retrieve reservations
-    const reservations = await Reservation.find({ doctorId: userId }).sort({ date: -1 });
+    const reservations = await Reservation.find({
+      $or: [
+        { doctorId: userId },
+        ...(doctorProfileId ? [{ doctorId: doctorProfileId }] : [])
+      ]
+    }).sort({ date: -1 });
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);

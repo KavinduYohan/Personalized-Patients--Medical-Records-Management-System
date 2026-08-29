@@ -6,6 +6,7 @@ const  Reservation = require('../model/reservation'); // Assuming Voter model is
 const Doctor = require('../model/Doctors');
 const Patient = require("../model/patient");
 const reservation = require("../model/reservation");
+const AdminTest = require("../model/AdminTest");
 //const Doctors = require('../model/Doctors');
 //const Doctors = require('../model/Doctors');
 
@@ -92,7 +93,7 @@ Vrouter.get('/showVoter', async (req, res) => {
 
 Vrouter.post('/reservationForm', async (req, res) => {
   try {
-    const { docID, patientId, date, timeSlot, message } = req.body;
+    const { docID, patientId, date, timeSlot, message, labTest } = req.body;
     const effectivePatientId = patientId || req.session.userId;
 
     if (!effectivePatientId) {
@@ -108,14 +109,17 @@ Vrouter.post('/reservationForm', async (req, res) => {
       return res.redirect('/Alldoctors');
     }
 
-    const doctorID = doctor.docID || doctor._id;
+    let appointmentMessage = message || '';
+    if (labTest && labTest.trim() !== '') {
+      appointmentMessage = appointmentMessage ? `[Requested Lab Test: ${labTest}] - ${appointmentMessage}` : `[Requested Lab Test: ${labTest}]`;
+    }
 
     const newReservation = new Reservation({
-      doctorId: doctorID,
+      doctorId: doctor._id,
       patientId: effectivePatientId,
       date,
       timeSlot,
-      message: message || ''
+      message: appointmentMessage
     });
 
     await newReservation.save();
@@ -290,7 +294,7 @@ Vrouter.get('/fetch', async (req, res) => {
   try {
     // Fetch all doctors from the database where clinic is 'A'
     const doctors = await Doctor.find({ clinic: 'A' });
-
+    const labTests = await AdminTest.find({}).lean();
     const patientId = req.session.userId;
     
 
@@ -299,7 +303,7 @@ Vrouter.get('/fetch', async (req, res) => {
       return res.redirect('/login');
     }
 
-    res.render('fetch', { doctors, patientId }); // Pass the 'doctors' array and 'patientId' to the template
+    res.render('fetch', { doctors, patientId, labTests }); // Pass the 'doctors' array, 'patientId', and 'labTests' to the template
   } catch (error) {
     console.error('Error fetching doctors:', error);
     res.status(500).send('Internal Server Error');
@@ -308,9 +312,9 @@ Vrouter.get('/fetch', async (req, res) => {
 
 Vrouter.get('/clinicB', async (req, res) => {
   try {
-    // Fetch all doctors from the database where clinic is 'A'
+    // Fetch all doctors from the database where clinic is 'B'
     const doctors = await Doctor.find({ clinic: 'B' });
-
+    const labTests = await AdminTest.find({}).lean();
     const patientId = req.session.userId;
     
 
@@ -319,7 +323,7 @@ Vrouter.get('/clinicB', async (req, res) => {
       return res.redirect('/login');
     }
 
-    res.render('fetch', { doctors, patientId }); // Pass the 'doctors' array and 'patientId' to the template
+    res.render('fetch', { doctors, patientId, labTests }); // Pass the 'doctors' array, 'patientId', and 'labTests' to the template
   } catch (error) {
     console.error('Error fetching doctors:', error);
     res.status(500).send('Internal Server Error');
@@ -330,9 +334,10 @@ Vrouter.get('/clinicB', async (req, res) => {
 Vrouter.get('/Alldoctors', async (req, res) => {
   try {
     const doctors = await Doctor.find({});
+    const labTests = await AdminTest.find({}).lean();
     const patientId = req.session.userId;
 
-    res.render('Alldoctors', { doctors, patientId });
+    res.render('Alldoctors', { doctors, patientId, labTests });
   } catch (error) {
     console.error('Error fetching doctors:', error);
     res.status(500).send('Internal Server Error');
@@ -347,7 +352,15 @@ Vrouter.get('/status', async (req, res) => {
   }
 
   try {
-    const reservations = await reservation.find({ doctorId: loggedInDoctorId })
+    const doctorProfile = await Doctor.findOne({ docID: loggedInDoctorId });
+    const doctorProfileId = doctorProfile ? doctorProfile._id : null;
+
+    const reservations = await reservation.find({
+      $or: [
+        { doctorId: loggedInDoctorId },
+        ...(doctorProfileId ? [{ doctorId: doctorProfileId }] : [])
+      ]
+    })
       .populate('patientId')
       .sort({ date: -1 });
 
@@ -366,9 +379,25 @@ Vrouter.get('/patientres', async (req, res) => {
   }
 
   try {
-    const reservations = await reservation.find({ patientId: loggedInUserId })
-      .populate('doctorId')
-      .sort({ date: -1 });
+    const rawReservations = await reservation.find({ patientId: loggedInUserId })
+      .sort({ date: -1 })
+      .lean();
+
+    const reservations = await Promise.all(rawReservations.map(async (resv) => {
+      if (resv.doctorId) {
+        const docRefId = resv.doctorId._id || resv.doctorId;
+        const docProfile = (await Doctor.findOne({ _id: docRefId }).lean()) ||
+                           (await Doctor.findOne({ docID: docRefId }).lean());
+        if (docProfile) {
+          resv.doctorId = docProfile;
+        } else {
+          resv.doctorId = { name: 'Specialist Doctor' };
+        }
+      } else {
+        resv.doctorId = { name: 'Specialist Doctor' };
+      }
+      return resv;
+    }));
 
     res.render('patientres', { reservations: reservations });
   } catch (error) {

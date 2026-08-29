@@ -68,12 +68,19 @@
 
               <p class="text-muted small flex-grow-1"><%= doctor.about || 'Dedicated healthcare practitioner providing consultations.' %></p>
 
-              <button class="btn btn-primary btn-sm w-100 py-2 mt-3" data-bs-toggle="modal" data-bs-target="#reservationModal<%= doctor._id %>">
-                <i class="bi bi-calendar-plus me-1"></i> Make Reservation
-              </button>
+              <% if (typeof currentUserId !== 'undefined' && currentUserId) { %>
+                <button class="btn btn-primary btn-sm w-100 py-2 mt-3" data-bs-toggle="modal" data-bs-target="#reservationModal<%= doctor._id %>">
+                  <i class="bi bi-calendar-plus me-1"></i> Make Reservation
+                </button>
+              <% } else { %>
+                <a href="/login" class="btn btn-primary btn-sm w-100 py-2 mt-3 text-center text-decoration-none d-block">
+                  <i class="bi bi-calendar-plus me-1"></i> Make Reservation
+                </a>
+              <% } %>
             </div>
           </div>
 
+          <% if (typeof currentUserId !== 'undefined' && currentUserId) { %>
           <!-- Reservation Modal -->
           <div class="modal fade" id="reservationModal<%= doctor._id %>" tabindex="-1" aria-labelledby="modalLabel<%= doctor._id %>" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -104,6 +111,18 @@
                     </div>
 
                     <div class="mb-3">
+                      <label class="form-label" for="labTest<%= doctor._id %>">Laboratory / Diagnostic Test (Optional)</label>
+                      <select class="form-select" id="labTest<%= doctor._id %>" name="labTest">
+                        <option value="">-- None / Doctor Consultation Only --</option>
+                        <% if (typeof labTests !== 'undefined' && labTests && labTests.length > 0) { %>
+                          <% labTests.forEach(test => { %>
+                            <option value="<%= test.testname %>"><%= test.testname %></option>
+                          <% }); %>
+                        <% } %>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
                       <label class="form-label" for="message<%= doctor._id %>">Reason / Symptoms (Optional)</label>
                       <textarea class="form-control" id="message<%= doctor._id %>" name="message" rows="3" placeholder="Briefly describe your symptoms or reason for visit..."></textarea>
                     </div>
@@ -116,6 +135,7 @@
               </div>
             </div>
           </div>
+          <% } %>
         <% }); %>
       </div>
     <% } else { %>
